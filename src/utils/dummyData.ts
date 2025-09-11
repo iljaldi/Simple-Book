@@ -355,7 +355,7 @@ export const generateDummyTransactions = async (userId: string) => {
         payment_method: 'transfer',
         business_use_ratio: 1.0,
         is_deductible: true,
-      },
+      }
     ];
 
     console.log('더미 데이터 삽입 시작 - 총', dummyTransactions.length, '개');
