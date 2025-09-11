@@ -1,0 +1,594 @@
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Slider } from '@/components/ui/slider';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { 
+  Calendar as CalendarIcon,
+  ChevronDown,
+  Calculator,
+  Settings,
+  Save,
+  Plus,
+  Receipt,
+  CreditCard,
+  Building2,
+  Smartphone
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useCategories } from '@/hooks/useCategories';
+import { toast } from 'sonner';
+
+// 필수 필드만 포함한 간소화된 스키마
+const simpleExpenseSchema = z.object({
+  // 필수 필드
+  date: z.date({ required_error: '날짜를 선택해주세요' }),
+  counterparty_name: z.string().min(1, '거래처명을 입력해주세요'),
+  total_amount: z.string().min(1, '결제금액을 입력해주세요'),
+  payment_method: z.string().min(1, '결제수단을 선택해주세요'),
+  
+  // 선택 필드 (상세 모드)
+  category_id: z.string().optional(),
+  evidence_type: z.string().optional(),
+  taxation_type: z.string().default('TAXABLE'),
+  supply_amount: z.string().default(''),
+  vat_amount: z.string().default('0'),
+  business_use_ratio: z.number().default(100),
+  counterparty_biz_no: z.string().optional(),
+  project: z.string().optional(),
+  description: z.string().optional(),
+});
+
+type SimpleExpenseFormData = z.infer<typeof simpleExpenseSchema>;
+
+interface SimpleExpenseFormProps {
+  onSuccess: () => void;
+  onContinueAdding?: () => void;
+  initialData?: any;
+}
+
+const PAYMENT_METHODS = [
+  { value: 'card', label: '카드', icon: CreditCard },
+  { value: 'transfer', label: '계좌이체', icon: Building2 },
+  { value: 'cash', label: '현금', icon: CreditCard },
+  { value: 'simple_pay', label: '간편결제', icon: Smartphone },
+  { value: 'etc', label: '기타', icon: CreditCard },
+];
+
+const EVIDENCE_TYPES = [
+  { value: 'CARD', label: '카드매출전표', description: '자동 연계' },
+  { value: 'TAX_INVOICE', label: '세금계산서', description: '사업자번호 필요' },
+  { value: 'INVOICE', label: '계산서', description: '간이과세자' },
+  { value: 'CASH_RCPT', label: '현금영수증', description: '국세청 연계' },
+  { value: 'SIMPLE_RCPT', label: '간이영수증', description: '비용 제한' },
+  { value: 'NONE', label: '증빙 없음', description: '비용 불인정' },
+];
+
+export const SimpleExpenseForm: React.FC<SimpleExpenseFormProps> = ({ 
+  onSuccess, 
+  onContinueAdding,
+  initialData 
+}) => {
+  const [isDetailMode, setIsDetailMode] = useState(!!initialData?.project || !!initialData?.description);
+  const [saveType, setSaveType] = useState<'save' | 'continue'>('save');
+  const { createTransaction, updateTransaction, isCreating } = useTransactions();
+  const { categories } = useCategories();
+
+  const form = useForm<SimpleExpenseFormData>({
+    resolver: zodResolver(simpleExpenseSchema),
+    defaultValues: initialData ? {
+      date: new Date(initialData.date),
+      counterparty_name: initialData.counterparty_name || '',
+      total_amount: initialData.amount_gross?.toString() || '',
+      payment_method: initialData.payment_method || 'card',
+      category_id: initialData.category ? categories.find(c => c.name === initialData.category)?.id || '' : '',
+      evidence_type: initialData.evidence_type || 'CARD',
+      taxation_type: initialData.taxation_type || 'TAXABLE',
+      supply_amount: initialData.supply_amount?.toString() || '',
+      vat_amount: initialData.vat_amount?.toString() || '0',
+      business_use_ratio: Math.round((initialData.business_use_ratio || 1) * 100),
+      counterparty_biz_no: initialData.counterparty_biz_no || '',
+      project: initialData.project || '',
+      description: initialData.description || '',
+    } : {
+      date: new Date(),
+      counterparty_name: '',
+      counterparty_biz_no: '',
+      category_id: '',
+      taxation_type: 'TAXABLE',
+      supply_amount: '',
+      vat_amount: '0',
+      total_amount: '',
+      business_use_ratio: 100,
+      evidence_type: 'CARD',
+      payment_method: 'card',
+      project: '',
+      description: '',
+    },
+  });
+
+  const expenseCategories = categories.filter(cat => cat.transaction_type === 'expense');
+  
+  // 총 결제금액 변경 시 공급가액/부가세 자동 계산
+  const watchTotalAmount = form.watch('total_amount');
+  const watchTaxationType = form.watch('taxation_type');
+
+  useEffect(() => {
+    if (watchTotalAmount && !isNaN(parseFloat(watchTotalAmount))) {
+      const total = parseFloat(watchTotalAmount);
+      
+      if (watchTaxationType === 'TAXABLE') {
+        const supply = Math.round(total / 1.1);
+        const vat = total - supply;
+        form.setValue('supply_amount', supply.toString());
+        form.setValue('vat_amount', vat.toString());
+      } else {
+        form.setValue('supply_amount', total.toString());
+        form.setValue('vat_amount', '0');
+      }
+    }
+  }, [watchTotalAmount, watchTaxationType, form]);
+
+  // 결제수단 변경 시 증빙유형 자동 설정
+  const watchPaymentMethod = form.watch('payment_method');
+  useEffect(() => {
+    if (watchPaymentMethod) {
+      let autoEvidenceType = '';
+      switch (watchPaymentMethod) {
+        case 'card':
+        case 'simple_pay':
+          autoEvidenceType = 'CARD';
+          break;
+        case 'transfer':
+          autoEvidenceType = 'TAX_INVOICE';
+          break;
+        case 'cash':
+          autoEvidenceType = 'CASH_RCPT';
+          break;
+        default:
+          return;
+      }
+      if (autoEvidenceType && isDetailMode) {
+        form.setValue('evidence_type', autoEvidenceType);
+      }
+    }
+  }, [watchPaymentMethod, form, isDetailMode]);
+
+  // 카테고리 변경 시 과세유형 자동 설정
+  const watchCategoryId = form.watch('category_id');
+  useEffect(() => {
+    if (watchCategoryId) {
+      const selectedCategory = expenseCategories.find(cat => cat.id === watchCategoryId);
+      if (selectedCategory?.default_taxation_type) {
+        form.setValue('taxation_type', selectedCategory.default_taxation_type as any);
+      }
+    }
+  }, [watchCategoryId, expenseCategories, form]);
+
+  const onSubmit = async (data: SimpleExpenseFormData) => {
+    try {
+      const transactionData = {
+        type: 'expense' as const,
+        date: format(data.date, 'yyyy-MM-dd'),
+        counterparty_name: data.counterparty_name,
+        counterparty_biz_no: data.counterparty_biz_no || null,
+        category: data.category_id ? expenseCategories.find(c => c.id === data.category_id)?.name : null,
+        taxation_type: data.taxation_type as 'TAXABLE' | 'ZERO_RATED' | 'EXEMPT',
+        supply_amount: parseFloat(data.supply_amount) || 0,
+        vat_amount: parseFloat(data.vat_amount) || 0,
+        amount_gross: parseFloat(data.total_amount),
+        business_use_ratio: data.business_use_ratio / 100,
+        payment_method: (data.payment_method === 'simple_pay' ? 'etc' : data.payment_method) as 'transfer' | 'card' | 'cash' | 'etc',
+        evidence_type: (data.evidence_type || 'NONE') as 'TAX_INVOICE' | 'INVOICE' | 'CARD' | 'CASH_RCPT' | 'SIMPLE_RCPT' | 'NONE',
+        project: data.project || null,
+        description: data.description || null,
+        status: 'confirmed' as 'draft' | 'confirmed',
+      };
+
+      if (initialData?.id) {
+        // 수정 모드
+        await updateTransaction({ id: initialData.id, updates: transactionData });
+        toast.success('지출이 성공적으로 수정되었습니다.');
+        onSuccess();
+      } else {
+        // 새 거래 생성 모드
+        await createTransaction(transactionData);
+        
+        if (saveType === 'continue') {
+          toast.success('지출이 저장되었습니다. 새 거래를 입력하세요.');
+          form.reset({
+            date: new Date(),
+            counterparty_name: '',
+            counterparty_biz_no: '',
+            category_id: data.category_id, // 카테고리는 유지
+            taxation_type: 'TAXABLE',
+            supply_amount: '',
+            vat_amount: '0',
+            total_amount: '',
+            business_use_ratio: 100,
+            evidence_type: data.evidence_type || 'CARD',
+            payment_method: data.payment_method, // 결제수단은 유지
+            project: '',
+            description: '',
+          });
+          onContinueAdding?.();
+        } else {
+          toast.success('지출이 성공적으로 저장되었습니다.');
+          onSuccess();
+        }
+      }
+    } catch (error) {
+      toast.error(initialData?.id ? '수정 중 오류가 발생했습니다.' : '저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  const formatCurrency = (amount: string) => {
+    const num = parseFloat(amount);
+    return isNaN(num) ? '' : num.toLocaleString('ko-KR');
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* 기본 정보 (필수 섹션) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Receipt className="h-5 w-5 text-primary" />
+              기본 정보
+              <Badge variant="secondary" className="text-xs">필수</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* 날짜 */}
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>거래일자 *</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "yyyy년 MM월 dd일", { locale: ko })
+                          ) : (
+                            <span>날짜를 선택하세요</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-popover" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* 거래처명 */}
+            <FormField
+              control={form.control}
+              name="counterparty_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>거래처명 *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="비용을 지출한 업체명이나 상점명을 입력하세요"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs text-muted-foreground">
+                    결제한 상점이나 업체의 이름을 입력하세요
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* 총 결제금액 */}
+            <FormField
+              control={form.control}
+              name="total_amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>총 결제금액 *</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input 
+                        type="number"
+                        placeholder="실제로 결제한 총 금액을 입력하세요"
+                        {...field}
+                        className="pr-12"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                        원
+                      </span>
+                    </div>
+                  </FormControl>
+                  {field.value && (
+                    <FormDescription className="text-xs text-red-600">
+                      {formatCurrency(field.value)}원 
+                      {watchTaxationType === 'TAXABLE' && ' (VAT 포함)'}
+                    </FormDescription>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* 결제수단 */}
+            <FormField
+              control={form.control}
+              name="payment_method"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>결제수단 *</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="결제수단을 선택하세요" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-popover">
+                      {PAYMENT_METHODS.map((method) => (
+                        <SelectItem key={method.value} value={method.value}>
+                          <div className="flex items-center gap-2">
+                            <method.icon className="h-4 w-4" />
+                            {method.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
+
+        {/* 상세 정보 (선택 섹션) */}
+        <Collapsible open={isDetailMode} onOpenChange={setIsDetailMode}>
+          <CollapsibleTrigger asChild>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                상세 정보 설정
+                <Badge variant="outline" className="text-xs">선택</Badge>
+              </div>
+              <ChevronDown className={cn(
+                "h-4 w-4 transition-transform duration-200",
+                isDetailMode && "rotate-180"
+              )} />
+            </Button>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent className="space-y-4 mt-4">
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                {/* 카테고리 */}
+                <FormField
+                  control={form.control}
+                  name="category_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>카테고리</FormLabel>
+                      <Select value={field.value || ''} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="지출 카테고리를 선택하세요" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-popover">
+                          {expenseCategories.map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription className="text-xs">
+                        미선택 시 기본 카테고리로 분류됩니다
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+
+                {/* 증빙유형 */}
+                <FormField
+                  control={form.control}
+                  name="evidence_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>증빙유형</FormLabel>
+                      <Select value={field.value || ''} onValueChange={field.onChange}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="증빙유형을 선택하세요" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-popover">
+                          {EVIDENCE_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              <div className="flex flex-col items-start">
+                                <span>{type.label}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {type.description}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription className="text-xs">
+                        결제수단에 따라 자동으로 설정됩니다
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+
+                {/* 사업용 비율 */}
+                <FormField
+                  control={form.control}
+                  name="business_use_ratio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>사업용 비율: {field.value}%</FormLabel>
+                      <FormControl>
+                        <Slider
+                          min={0}
+                          max={100}
+                          step={10}
+                          value={[field.value]}
+                          onValueChange={(value) => field.onChange(value[0])}
+                          className="w-full"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        해당 지출이 사업과 관련된 비율을 설정하세요
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+
+                {/* 사업자번호 */}
+                <FormField
+                  control={form.control}
+                  name="counterparty_biz_no"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>사업자번호</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="거래처 사업자번호 (선택사항)"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        세금계산서 발행 시 필요합니다
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+
+                {/* 프로젝트 */}
+                <FormField
+                  control={form.control}
+                  name="project"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>프로젝트명</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="관련 프로젝트명 (선택사항)"
+                          {...field} 
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {/* 설명 */}
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>설명</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="추가 설명 (선택사항)"
+                          {...field} 
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* 실시간 미리보기 */}
+        {watchTotalAmount && (
+          <Alert>
+            <Calculator className="h-4 w-4" />
+            <AlertDescription>
+              <div className="text-sm space-y-1">
+                <div className="font-medium">계산 결과:</div>
+                <div>공급가액: {formatCurrency(form.watch('supply_amount'))}원</div>
+                <div>부가세: {formatCurrency(form.watch('vat_amount'))}원</div>
+                <div className="font-medium text-primary">
+                  총액: {formatCurrency(watchTotalAmount)}원
+                </div>
+                <div>사업용: {form.watch('business_use_ratio')}%</div>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* 저장 버튼 */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+          <Button 
+            type="submit"
+            disabled={isCreating}
+            onClick={() => setSaveType('save')}
+            className="flex-1"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            {isCreating && saveType === 'save' ? (initialData?.id ? '수정 중...' : '저장 중...') : (initialData?.id ? '수정' : '저장')}
+          </Button>
+          
+          {!initialData?.id && (
+            <Button 
+              type="submit"
+              variant="outline"
+              disabled={isCreating}
+              onClick={() => setSaveType('continue')}
+              className="flex-1"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {isCreating && saveType === 'continue' ? '저장 중...' : '저장 후 계속 입력'}
+            </Button>
+          )}
+        </div>
+      </form>
+    </Form>
+  );
+};
