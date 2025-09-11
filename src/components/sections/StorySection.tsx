@@ -15,7 +15,7 @@ const StorySection = () => {
           <div className="text-center">
             <div className="rounded-2xl h-64 sm:h-80 flex flex-col justify-center items-center">
               <img 
-                src="/images/storysection-1.svg" 
+                src="/images/storysection-1.png" 
                 alt="복잡한 세금 분류" 
                 className="w-4/5 h-4/5 object-contain rounded-2xl"
               />
@@ -34,7 +34,7 @@ const StorySection = () => {
           <div className="text-center">
             <div className="rounded-2xl h-64 sm:h-80 flex flex-col justify-center items-center">
               <img 
-                src="/images/storysection-2.svg" 
+                src="/images/storysection-2.png" 
                 alt="번거로운 입력" 
                 className="w-4/5 h-4/5 object-contain rounded-2xl"
               />
@@ -53,7 +53,7 @@ const StorySection = () => {
           <div className="text-center">
             <div className="rounded-2xl h-64 sm:h-80 flex flex-col justify-center items-center">
               <img 
-                src="/images/storysection-3.svg" 
+                src="/images/storysection-3.png" 
                 alt="불안한 증빙 관리" 
                 className="w-4/5 h-4/5 object-contain rounded-2xl"
               />
