@@ -27,3 +27,6 @@ public/
 dist/
 node_modules/
 my-app/ git add .
+dist/
+node_modules/
+supabase/
