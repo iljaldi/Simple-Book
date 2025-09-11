@@ -84,8 +84,20 @@ const HeroMain = () => {
       </nav>
 
       {/* Hero Section */}
-      <section id="hero" className="px-4 pt-20 pb-4 sm:px-6 lg:px-8 mt-16 sm:pt-28">
-        <div className="max-w-4xl mx-auto">
+      <section 
+        id="hero" 
+        className="relative px-4 pt-20 pb-4 sm:px-6 lg:px-8 mt-16 sm:pt-28 min-h-screen flex items-center"
+        style={{
+          backgroundImage: 'url(/images/main-hero-bg.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-white/80"></div>
+        
+        <div className="relative z-10 max-w-4xl mx-auto w-full">
           <div className="text-center">
             {/* Main Headline */}
             <div className="mb-8 sm:mb-12">
