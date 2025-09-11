@@ -26,7 +26,13 @@ dist-ssr
 public/
 dist/
 node_modules/
-my-app/ git add .
-dist/
-node_modules/
+my-app/
 supabase/
+
+# Font files (too large for GitHub)
+public/fonts/
+*.woff
+*.woff2
+*.eot
+*.ttf
+*.svg

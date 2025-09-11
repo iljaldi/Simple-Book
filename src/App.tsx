@@ -11,6 +11,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
+import AddTransaction from "./pages/AddTransaction";
+import EditTransaction from "./pages/EditTransaction";
 import Components from "./pages/Components";
 import TestPage from "./pages/TestPage";
 import Receipts from "./pages/Receipts";
@@ -77,6 +79,20 @@ const App = () => (
               <ProtectedRoute>
                 <AuthenticatedLayout>
                   <Transactions />
+                </AuthenticatedLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/transactions/add" element={
+              <ProtectedRoute>
+                <AuthenticatedLayout>
+                  <AddTransaction />
+                </AuthenticatedLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/transactions/edit/:id" element={
+              <ProtectedRoute>
+                <AuthenticatedLayout>
+                  <EditTransaction />
                 </AuthenticatedLayout>
               </ProtectedRoute>
             } />

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTransactions } from '@/hooks/useTransactions';
 import { Edit, Trash2, TrendingUp, TrendingDown, CheckCircle, Clock, Paperclip, AlertTriangle, ArrowUpDown, Receipt } from 'lucide-react';
@@ -29,10 +30,15 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   filters = {},
   onEditTransaction
 }) => {
-  const { transactions, isLoading, deleteTransaction, isDeleting } = useTransactions();
+  const { transactions, isLoading, deleteTransaction, updateTransaction, isDeleting } = useTransactions();
   const [selectedTransactions, setSelectedTransactions] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'category'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showTaxTypeModal, setShowTaxTypeModal] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
+  const [newTaxType, setNewTaxType] = useState('');
+  const [displayCount, setDisplayCount] = useState(10);
   const navigate = useNavigate();
 
   // Prepare filtered list consistently across renders
@@ -133,6 +139,82 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     } else {
       setSelectedTransactions([]);
     }
+  };
+
+  // 다중 선택 액션 핸들러들
+  const handleBulkCategoryEdit = () => {
+    if (selectedTransactions.length === 0) return;
+    setNewCategory('');
+    setShowCategoryModal(true);
+  };
+
+  const handleBulkTaxTypeChange = () => {
+    if (selectedTransactions.length === 0) return;
+    setNewTaxType('');
+    setShowTaxTypeModal(true);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedTransactions.length === 0) return;
+    
+    const confirmed = window.confirm(`선택한 ${selectedTransactions.length}개 항목을 삭제하시겠습니까?`);
+    if (confirmed) {
+      try {
+        // 선택된 각 거래를 순차적으로 삭제
+        for (const transactionId of selectedTransactions) {
+          await deleteTransaction(transactionId);
+        }
+        alert(`${selectedTransactions.length}개 항목이 삭제되었습니다.`);
+        setSelectedTransactions([]);
+      } catch (error) {
+        console.error('삭제 중 오류 발생:', error);
+        alert('삭제 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  const handleCategorySubmit = async () => {
+    if (newCategory.trim()) {
+      try {
+        // 선택된 각 거래의 카테고리를 순차적으로 수정
+        for (const transactionId of selectedTransactions) {
+          await updateTransaction({ 
+            id: transactionId, 
+            updates: { category: newCategory.trim() } 
+          });
+        }
+        alert(`${selectedTransactions.length}개 항목의 카테고리를 "${newCategory}"로 변경했습니다.`);
+        setSelectedTransactions([]);
+        setShowCategoryModal(false);
+      } catch (error) {
+        console.error('카테고리 수정 중 오류 발생:', error);
+        alert('카테고리 수정 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  const handleTaxTypeSubmit = async () => {
+    if (newTaxType.trim()) {
+      try {
+        // 선택된 각 거래의 세금유형을 순차적으로 수정
+        for (const transactionId of selectedTransactions) {
+          await updateTransaction({ 
+            id: transactionId, 
+            updates: { taxation_type: newTaxType } 
+          });
+        }
+        alert(`${selectedTransactions.length}개 항목의 세금유형을 "${newTaxType}"로 변경했습니다.`);
+        setSelectedTransactions([]);
+        setShowTaxTypeModal(false);
+      } catch (error) {
+        console.error('세금유형 변경 중 오류 발생:', error);
+        alert('세금유형 변경 중 오류가 발생했습니다.');
+      }
+    }
+  };
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 10);
   };
 
   const handleSort = (newSortBy: 'date' | 'amount' | 'category') => {
@@ -277,85 +359,83 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     onEditTransaction?.(transaction);
   };
 
+  // 표시할 거래 목록 (페이지네이션 적용)
+  const displayedTransactions = filteredTransactions.slice(0, displayCount);
+  const hasMore = filteredTransactions.length > displayCount;
+
   return (
     <div className="space-y-4">
-      {/* 요약 정보 및 컨트롤 바 */}
-      <Card className="shadow-card border-border">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-4 text-sm">
-              <span className="font-medium text-foreground">
-                총 {summary.totalCount}건
-              </span>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="text-green-600 font-medium">
-                  +{formatCurrency(summary.totalIncome)}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingDown className="h-4 w-4 text-red-600" />
-                <span className="text-red-600 font-medium">
-                  -{formatCurrency(summary.totalExpense)}
-                </span>
-              </div>
-              <span className={`font-bold ${summary.netAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                순액: {summary.netAmount >= 0 ? '+' : ''}{formatCurrency(summary.netAmount)}
-              </span>
-            </div>
-            
+      {/* 다중 선택 액션 바 */}
+      {selectedTransactions.length > 0 && (
+        <div className="mt-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">
+              {selectedTransactions.length}개 항목 선택됨
+            </span>
             <div className="flex items-center gap-2">
-              <Select value={sortBy} onValueChange={(value) => handleSort(value as 'date' | 'amount' | 'category')}>
-                <SelectTrigger className="w-32">
-                  <ArrowUpDown className="h-4 w-4 mr-2" />
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="date">날짜순</SelectItem>
-                  <SelectItem value="amount">금액순</SelectItem>
-                  <SelectItem value="category">카테고리순</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* 다중 선택 액션 바 */}
-          {selectedTransactions.length > 0 && (
-            <div className="mt-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">
-                  {selectedTransactions.length}개 항목 선택됨
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline">카테고리 수정</Button>
-                  <Button size="sm" variant="outline">세금유형 변경</Button>
-                  <Button size="sm" variant="destructive">삭제</Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleBulkCategoryEdit}
+                  >
+                    카테고리 수정
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleBulkTaxTypeChange}
+                  >
+                    세금유형 변경
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={handleBulkDelete}
+                  >
+                    삭제
+                  </Button>
                 </div>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
 
       {/* 거래 리스트 */}
-      <Card className="shadow-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">거래 내역</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* 전체 선택 체크박스 */}
+      <div>
+        <h3 className="text-lg font-semibold text-foreground mb-4">거래 내역</h3>
+        <div>
+          {/* 전체 선택 체크박스와 요약 정보 */}
           {filteredTransactions.length > 0 && (
-            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border/20">
-              <Checkbox
-                checked={selectedTransactions.length === filteredTransactions.length}
-                onCheckedChange={handleSelectAll}
-              />
-              <span className="text-sm font-medium text-muted-foreground">전체 선택</span>
+            <div className="flex items-center justify-between mb-1 pb-1">
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  checked={selectedTransactions.length === displayedTransactions.length && displayedTransactions.length > 0}
+                  onCheckedChange={handleSelectAll}
+                />
+                <span className="text-sm font-medium text-muted-foreground">전체 선택</span>
+                <span className="font-medium text-foreground">
+                  총 {summary.totalCount}건
+                </span>
+              </div>
+              
+              {/* 정렬 옵션 */}
+              <div className="flex items-center gap-2">
+                <Select value={sortBy} onValueChange={(value) => handleSort(value as 'date' | 'amount' | 'category')}>
+                  <SelectTrigger className="w-32">
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    <SelectItem value="date">날짜순</SelectItem>
+                    <SelectItem value="amount">금액순</SelectItem>
+                    <SelectItem value="category">카테고리순</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
 
-          <div className="space-y-3">
-            {filteredTransactions.map((transaction) => {
+          <div className="space-y-0">
+            {displayedTransactions.map((transaction) => {
               const vatStatus = getVatStatusBadge(transaction.taxation_type, transaction.vat_amount);
               const withholdingLabel = getWithholdingTaxLabel(
                 transaction.withholding_income_tax || 0, 
@@ -366,92 +446,46 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               return (
                 <div
                   key={transaction.id}
-                  className="group relative bg-card border border-border rounded-lg hover:bg-muted/30 hover:shadow-soft transition-smooth"
+                  className="group relative bg-card rounded-lg hover:bg-muted/30 hover:shadow-soft transition-smooth border-b border-gray-100"
                 >
                   {/* 선택 체크박스 추가 */}
-                  <div className="flex items-start gap-3 p-4">
-                    <Checkbox
-                      checked={selectedTransactions.includes(transaction.id)}
-                      onCheckedChange={(checked) => handleSelectTransaction(transaction.id, !!checked)}
-                      className="mt-1"
-                    />
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        {/* Left Section: 날짜, 거래처명, 카테고리 + 프로젝트 */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-3 mb-2">
-                            {/* Category Emoji */}
-                            <span className="text-lg flex-shrink-0">
-                              {getCategoryEmoji(transaction.category)}
-                            </span>
-                            
-                            <div className="flex-1 min-w-0">
-                              {/* Transaction Date */}
-                              <div className="text-xs text-muted-foreground mb-1">
-                                {format(new Date(transaction.date), 'yyyy-MM-dd', { locale: ko })}
-                              </div>
-                              
-                              {/* Counterparty Name */}
-                              <h3 className="font-semibold text-foreground truncate mb-1">
-                                {transaction.counterparty_name || transaction.description || '거래 내역'}
-                              </h3>
-                              
-                              {/* Category + Project */}
-                              <div className="flex items-center space-x-2">
-                                {transaction.category && (
-                                  <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                                    {transaction.category}
-                                  </Badge>
-                                )}
-                                {transaction.project && (
-                                  <Badge variant="outline" className="text-xs border-accent text-accent-foreground">
-                                    [{transaction.project}]
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Right Section: 금액 + 부가세 상태, 사업용 비율 */}
-                        <div className="text-right flex-shrink-0 ml-4">
-                          <div className={`font-bold text-lg mb-1 ${
-                            transaction.type === 'income' 
-                              ? 'text-green-600' 
-                              : 'text-red-600'
-                          }`}>
-                            {transaction.type === 'income' ? '+' : '-'}
-                            {formatCurrency(transaction.amount_gross)}
-                          </div>
-                          
-                          {/* VAT Status */}
-                          <div className="mb-1">
-                            <Badge variant={vatStatus.variant} className="text-xs">
-                              {vatStatus.text}
-                            </Badge>
-                          </div>
-                          
-                          {/* Business Use Ratio (for expenses only) */}
-                          {transaction.type === 'expense' && transaction.business_use_ratio && transaction.business_use_ratio < 1 && (
-                            <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
-                              사업용 {Math.round(transaction.business_use_ratio * 100)}%
-                            </div>
-                          )}
-                        </div>
+                  <div className="px-0 py-4">
+                    {/* 1행: 체크박스 + 날짜 (왼쪽) */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <Checkbox
+                        checked={selectedTransactions.includes(transaction.id)}
+                        onCheckedChange={(checked) => handleSelectTransaction(transaction.id, !!checked)}
+                        className="mt-0"
+                      />
+                      
+                      {/* Transaction Date */}
+                      <div className="text-xs text-muted-foreground">
+                        {format(new Date(transaction.date), 'yyyy-MM-dd', { locale: ko })}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Bottom Section: 증빙 아이콘 + 상태 */}
-                  <div className="px-4 pb-4">
-                    <div className="flex items-center justify-between">
-                      {/* Left: Evidence + Receipt Status */}
-                      <div className="flex items-center space-x-4">
+                    
+                    {/* 2행: 거래처명 + 카테고리 (왼쪽) | 증빙 + 영수증 (오른쪽) */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2 ml-6">
+                        {/* Counterparty Name */}
+                        <h3 className="font-semibold text-foreground">
+                          {transaction.counterparty_name || transaction.description || '거래 내역'}
+                        </h3>
+                        
+                        {/* Category */}
+                        {transaction.category && (
+                          <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-700">
+                            {transaction.category}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      {/* Evidence Type + Receipt Status */}
+                      <div className="flex items-center space-x-2">
                         {/* Evidence Type */}
-                        <div className="flex items-center gap-1 bg-muted/30 px-2 py-1 rounded">
-                          <EvidenceTypeIcon type={transaction.evidence_type} className="h-4 w-4" />
-                          <span className="text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs text-gray-700">
+                          <EvidenceTypeIcon type={transaction.evidence_type} className="h-3 w-3" />
+                          <span>
                             {transaction.evidence_type === 'TAX_INVOICE' && '세금계산서'}
                             {transaction.evidence_type === 'CARD' && '카드매출'}
                             {transaction.evidence_type === 'CASH_RCPT' && '현금영수증'}
@@ -461,43 +495,47 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                           </span>
                         </div>
                         
-                        {/* Receipt Attachment Status */}
-                        {(transaction as any).receipts && (transaction as any).receipts.length > 0 ? (
-                          <div className="flex items-center gap-1 text-success bg-success/10 px-2 py-1 rounded">
-                            <Receipt className="h-3 w-3" />
-                            <span className="text-xs">영수증 {(transaction as any).receipts.length}개</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1 text-muted-foreground bg-muted/30 px-2 py-1 rounded">
-                            <Receipt className="h-3 w-3" />
-                            <span className="text-xs">영수증 없음</span>
-                          </div>
-                        )}
-                        
-                        {/* Evidence Warning */}
-                        {transaction.evidence_type === 'NONE' && (
-                          <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                            <AlertTriangle className="h-3 w-3" />
-                            <span className="text-xs">증빙 확인 필요</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Right: Review Status + Withholding Tax + Actions */}
-                      <div className="flex items-center space-x-3">
-                        {/* Withholding Tax (income only) */}
-                        {transaction.type === 'income' && withholdingLabel && (
-                          <span className="text-xs text-muted-foreground bg-blue-50 px-2 py-1 rounded">
-                            {withholdingLabel}
+                        {/* Receipt Status */}
+                        <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-xs text-gray-700">
+                          <Receipt className="h-3 w-3" />
+                          <span>
+                            {(transaction as any).receipts && (transaction as any).receipts.length > 0 
+                              ? `영수증 ${(transaction as any).receipts.length}개`
+                              : '영수증 없음'
+                            }
                           </span>
-                        )}
-                        
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* 3행: 금액 + VAT 상태 (왼쪽) */}
+                    <div className="flex items-center space-x-2 mb-2 ml-6">
+                      {/* 금액 */}
+                      <div className={`font-bold text-lg ${
+                        transaction.type === 'income' 
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {transaction.type === 'income' ? '+' : '-'}
+                        {formatCurrency(transaction.amount_gross)}
+                      </div>
+                      
+                      {/* VAT Status */}
+                      <Badge variant={vatStatus.variant} className="text-xs bg-gray-100 text-gray-700">
+                        {vatStatus.text}
+                      </Badge>
+                    </div>
+                    
+                    {/* 4행: 상태 (왼쪽) | 액션 버튼 (오른쪽) */}
+                    <div className="flex items-center justify-between">
+                      {/* Left: 상태 정보 */}
+                      <div className="flex items-center space-x-2 ml-6">
                         {/* Review Status */}
                         <Badge 
                           variant={statusBadge.variant}
                           className={`text-xs flex items-center gap-1 ${
                             statusBadge.variant === 'destructive' 
-                              ? 'bg-red-50 text-red-700 border-red-200' 
+                              ? 'bg-orange-100 text-orange-700 border-orange-200' 
                               : statusBadge.variant === 'default'
                               ? 'bg-green-50 text-green-700 border-green-200'
                               : 'bg-amber-50 text-amber-700 border-amber-200'
@@ -506,33 +544,33 @@ export const TransactionList: React.FC<TransactionListProps> = ({
                           <statusBadge.icon className="h-3 w-3" />
                           {statusBadge.text}
                         </Badge>
+                      </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-smooth">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditTransaction(transaction);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteTransaction(transaction.id);
-                            }}
-                            disabled={isDeleting}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                      {/* Right: Action Buttons */}
+                      <div className="flex items-center space-x-1">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 w-6 p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditTransaction(transaction);
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteTransaction(transaction.id);
+                          }}
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -540,8 +578,89 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               );
             })}
           </div>
-        </CardContent>
-      </Card>
+          
+          {/* 더보기 버튼 */}
+          {hasMore && (
+            <div className="flex justify-center mt-4">
+              <Button
+                onClick={handleLoadMore}
+                variant="outline"
+                className="px-6 py-2"
+              >
+                더보기 ({filteredTransactions.length - displayCount}개 더)
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 카테고리 수정 모달 */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-lg font-semibold mb-4">카테고리 수정</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {selectedTransactions.length}개 항목의 카테고리를 변경합니다.
+            </p>
+            <Input
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              placeholder="새로운 카테고리를 입력하세요"
+              className="mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCategoryModal(false)}
+              >
+                취소
+              </Button>
+              <Button
+                onClick={handleCategorySubmit}
+                disabled={!newCategory.trim()}
+              >
+                적용
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 세금유형 변경 모달 */}
+      {showTaxTypeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-lg font-semibold mb-4">세금유형 변경</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              {selectedTransactions.length}개 항목의 세금유형을 변경합니다.
+            </p>
+            <Select value={newTaxType} onValueChange={setNewTaxType}>
+              <SelectTrigger className="mb-4">
+                <SelectValue placeholder="세금유형을 선택하세요" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="VAT_INCLUDED">VAT 포함</SelectItem>
+                <SelectItem value="VAT_EXCLUDED">VAT 제외</SelectItem>
+                <SelectItem value="VAT_FREE">VAT 면세</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowTaxTypeModal(false)}
+              >
+                취소
+              </Button>
+              <Button
+                onClick={handleTaxTypeSubmit}
+                disabled={!newTaxType}
+              >
+                적용
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

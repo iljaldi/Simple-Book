@@ -39,11 +39,8 @@ export const EvidenceTypeIcon: React.FC<EvidenceTypeIconProps> = ({ type, classN
   };
 
   return (
-    <div className="flex items-center space-x-1" title={getLabel()}>
+    <div className="flex items-center" title={getLabel()}>
       {getIcon()}
-      <span className="text-xs text-muted-foreground hidden sm:inline">
-        {getLabel()}
-      </span>
     </div>
   );
 };

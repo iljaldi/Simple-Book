@@ -120,41 +120,41 @@ export const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="relative">
-        <i className="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="거래처명으로 검색..."
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-10 pr-10"
-        />
-        {search && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-            onClick={() => handleSearchChange('')}
-          >
-            <i className="ri-close-line h-3 w-3" />
-          </Button>
-        )}
-      </div>
+      {/* Search Bar and Filter */}
+      <div className="flex items-center gap-3">
+        {/* Search Bar */}
+        <div className="relative flex-1">
+          <Input
+            placeholder="거래처명으로 검색..."
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10 pr-10"
+          />
+          <i className="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          {search && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+              onClick={() => handleSearchChange('')}
+            >
+              <i className="ri-close-line h-3 w-3" />
+            </Button>
+          )}
+        </div>
 
-      {/* Filter Toggle */}
-      <div className="flex items-center justify-between">
+        {/* Filter Button */}
         <Button
           variant="outline"
-          size="sm"
           onClick={() => setShowFilters(!showFilters)}
-          className={hasActiveFilters ? 'border-primary text-primary' : ''}
+          className={`h-10 ${hasActiveFilters ? 'border-primary text-primary' : ''}`}
         >
-          <i className="ri-filter-line h-4 w-4 mr-2" />
+          <i className="ri-filter-line h-5 w-5 mr-2" />
           필터 {hasActiveFilters && `(${[dateRange, category, evidenceType, transactionType].filter(Boolean).length})`}
         </Button>
         
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={handleClear}>
+          <Button variant="ghost" className="h-10" onClick={handleClear}>
             <i className="ri-close-line h-4 w-4 mr-1" />
             초기화
           </Button>

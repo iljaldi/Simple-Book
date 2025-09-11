@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import { Plus, Search } from 'lucide-react';
-import { TransactionForm } from '@/components/forms/TransactionForm';
+import { Plus } from 'lucide-react';
 import { TransactionList } from '@/components/lists/TransactionList';
 import { SearchFilterBar } from '@/components/ui/SearchFilterBar';
 import { useInitialSetup } from '@/hooks/useInitialSetup';
+import { useAuth } from '@/contexts/AuthContext';
+import { generateDummyTransactions } from '@/utils/dummyData';
 import { DateRange } from 'react-day-picker';
 
 const Transactions: React.FC = () => {
-  const [showForm, setShowForm] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<any>(null);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<{
     dateRange?: DateRange;
@@ -18,8 +18,27 @@ const Transactions: React.FC = () => {
     evidenceType?: string;
     transactionType?: string;
   }>({});
-  
+  const { user } = useAuth();
   useInitialSetup(); // Initialize default categories
+
+  // 컴포넌트 마운트 시 더미 데이터 자동 생성 (기존 데이터 삭제 후 새로 생성)
+  useEffect(() => {
+    const generateData = async () => {
+      if (user?.id) {
+        console.log('Transactions 컴포넌트에서 더미 데이터 생성 시도 - 사용자 ID:', user.id);
+        try {
+          await generateDummyTransactions(user.id);
+          console.log('Transactions 컴포넌트에서 더미 데이터 생성 완료');
+        } catch (error) {
+          console.error('Transactions 컴포넌트에서 더미 데이터 생성 실패:', error);
+        }
+      } else {
+        console.log('사용자 ID가 없어서 더미 데이터를 생성하지 않습니다.');
+      }
+    };
+
+    generateData();
+  }, [user?.id]);
 
   const handleSearchChange = (search: string) => {
     setSearchQuery(search);
@@ -40,20 +59,14 @@ const Transactions: React.FC = () => {
     setFilters({});
   };
 
-  const handleFormSuccess = () => {
-    setShowForm(false);
-    setEditingTransaction(null);
-  };
-
   const handleEditTransaction = (transaction: any) => {
-    setEditingTransaction(transaction);
-    setShowForm(true);
+    navigate(`/transactions/edit/${transaction.id}`);
   };
 
-  const handleContinueAdding = () => {
-    // 폼은 열린 상태로 유지하고, 폼 내부에서 초기화 처리
-    // 성공 메시지는 각 폼에서 처리
+  const handleAddTransaction = () => {
+    navigate('/transactions/add');
   };
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -69,7 +82,7 @@ const Transactions: React.FC = () => {
             {/* Desktop Add Button */}
             <div className="flex items-center gap-2">
             <Button
-             onClick={() => setShowForm(true)}
+             onClick={handleAddTransaction}
              className="bg-black text-white hover:bg-gray-800 rounded-full px-4 py-2 text-sm font-medium transition-colors"
               >
               <Plus className="h-4 w-4 mr-2" />
@@ -101,28 +114,10 @@ const Transactions: React.FC = () => {
       {/* Mobile Floating Action Button */}
       <Button
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-glow z-50 transition-bounce hover:scale-110 sm:hidden gradient-primary"
-        onClick={() => setShowForm(true)}
+        onClick={handleAddTransaction}
       >
         <Plus className="h-6 w-6" />
       </Button>
-
-      {/* Transaction Form Drawer */}
-      <Drawer open={showForm} onOpenChange={setShowForm}>
-        <DrawerContent className="max-h-[90vh] sm:max-h-[85vh]">
-          <DrawerHeader className="text-center border-b border-border/20 pb-4">
-            <DrawerTitle className="text-xl font-bold text-foreground">
-              {editingTransaction ? '거래 수정' : '새 거래 추가'}
-            </DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 sm:px-6 pb-4 overflow-y-auto">
-            <TransactionForm 
-              onSuccess={handleFormSuccess}
-              onContinueAdding={() => setShowForm(true)}
-              editingTransaction={editingTransaction}
-            />
-          </div>
-        </DrawerContent>
-      </Drawer>
     </div>
   );
 };
