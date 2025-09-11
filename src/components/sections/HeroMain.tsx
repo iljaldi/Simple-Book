@@ -136,7 +136,7 @@ const HeroMain = () => {
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-center">
             <img 
-              src="/images/main-hero.png" 
+              src="/images/main-hero.svg" 
               alt="Simple Book 메인 화면" 
               className="w-full max-w-[1056px] shadow-lg"
             />
