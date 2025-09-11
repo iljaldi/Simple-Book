@@ -26,12 +26,26 @@ const HeroMain = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div 
+      className="min-h-screen bg-white relative"
+    >
+      {/* Background image with 50% transparency */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          transform: 'none',
+          backgroundImage: 'url(/images/main-hero-bg.png)',
+          backgroundSize: 'auto 80%',
+          backgroundPosition: 'center center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.25
+        }}
+      ></div>
       {/* Navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
           ? 'bg-gray-100/50 backdrop-blur-md' 
-          : 'bg-gray-100/90 backdrop-blur-sm'
+          : 'bg-transparent'
       }`}>
         <div className="flex justify-between items-center max-w-6xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           {/* Logo */}
@@ -86,18 +100,9 @@ const HeroMain = () => {
       {/* Hero Section */}
       <section 
         id="hero" 
-        className="relative px-4 pt-20 pb-4 sm:px-6 lg:px-8 mt-16 sm:pt-28 min-h-screen flex items-center"
-        style={{
-          backgroundImage: 'url(/images/main-hero-bg.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
+        className="relative z-10 px-4 pt-20 pb-4 sm:px-6 lg:px-8 mt-16 sm:pt-28"
       >
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-white/80"></div>
-        
-        <div className="relative z-10 max-w-4xl mx-auto w-full">
+        <div className="max-w-4xl mx-auto w-full">
           <div className="text-center">
             {/* Main Headline */}
             <div className="mb-8 sm:mb-12">
@@ -144,13 +149,13 @@ const HeroMain = () => {
       </section>
 
       {/* Preview Section */}
-      <section className="px-4 sm:px-6 lg:px-8">
+      <section className="relative z-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-center">
             <img 
               src="/images/main-hero.png" 
               alt="Simple Book 메인 화면" 
-              className="w-full max-w-[1056px]"
+              className="relative z-20 w-full max-w-[1056px]"
             />
           </div>
         </div>
