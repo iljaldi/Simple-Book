@@ -135,24 +135,11 @@ const HeroMain = () => {
       <section className="px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-center">
-            <div className="w-full max-w-[1056px] h-96 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg flex flex-col items-center justify-center text-white">
-              <h2 className="text-4xl font-bold mb-4">Simple Book</h2>
-              <p className="text-xl mb-8">프리랜서를 위한 3분 간편장부</p>
-              <div className="grid grid-cols-3 gap-4 w-full max-w-2xl">
-                <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 text-center">
-                  <div className="text-2xl mb-2">💰</div>
-                  <div className="text-sm font-medium">수입 기록</div>
-                </div>
-                <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 text-center">
-                  <div className="text-2xl mb-2">💸</div>
-                  <div className="text-sm font-medium">지출 기록</div>
-                </div>
-                <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4 text-center">
-                  <div className="text-2xl mb-2">📊</div>
-                  <div className="text-sm font-medium">세금 신고</div>
-                </div>
-              </div>
-            </div>
+            <img 
+              src="/images/main-hero.png" 
+              alt="Simple Book 메인 화면" 
+              className="w-full max-w-[1056px] shadow-lg"
+            />
           </div>
         </div>
       </section>
