@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+public/
+dist/
+node_modules/
+my-app/ git add .
