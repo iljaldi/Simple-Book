@@ -138,7 +138,7 @@ const HeroMain = () => {
             <img 
               src="/images/main-hero.png" 
               alt="Simple Book 메인 화면" 
-              className="w-full max-w-[1056px] shadow-lg"
+              className="w-full max-w-[1056px]"
             />
           </div>
         </div>
