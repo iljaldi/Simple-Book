@@ -3,7 +3,7 @@
 const StorySection = () => {
   return (
     <section id="about" className="px-4 pt-24 pb-24 sm:pt-48 sm:pb-48 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[1056px] mx-auto">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold text-foreground mb-6 sm:mb-8 leading-tight">
             세금 때문에 이런 고민 있으신가요?

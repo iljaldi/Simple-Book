@@ -12,18 +12,21 @@ const ScreensSection = () => {
       title: "거래 입력 드로어",
       description: "5초 만에 끝나는 간편 입력",
       icon: "ri-computer-line",
+      image: "/images/view-1.png",
     },
     {
       id: 2,
       title: "영수증 OCR 업로드",
       description: "사진만 찍으면 자동 인식",
       icon: "ri-smartphone-line",
+      image: "/images/view-2.png",
     },
     {
       id: 3,
       title: "세무 보고서 PDF",
       description: "클릭 한 번으로 완성",
       icon: "ri-file-text-line",
+      image: "/images/view-3.png",
     },
   ];
 
@@ -32,8 +35,10 @@ const ScreensSection = () => {
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-      setIsTransitioning(false);
-    }, 300);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 50);
+    }, 250);
   };
 
   const prevSlide = () => {
@@ -41,8 +46,10 @@ const ScreensSection = () => {
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-      setIsTransitioning(false);
-    }, 300);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 50);
+    }, 250);
   };
 
   // 자동 슬라이드 기능
@@ -52,39 +59,35 @@ const ScreensSection = () => {
         setIsTransitioning(true);
         setTimeout(() => {
           setCurrentSlide((prev) => (prev + 1) % slides.length);
-          setIsTransitioning(false);
-        }, 300);
+          setTimeout(() => {
+            setIsTransitioning(false);
+          }, 50);
+        }, 250);
       }
-    }, 4000); // 4초마다 자동 슬라이드 (전환 시간 고려)
+    }, 6000); // 6초마다 자동 슬라이드 (전환 시간 고려)
 
     return () => clearInterval(interval);
   }, [slides.length, isTransitioning]);
 
   return (
     <section id="features" className="px-4 pt-48 pb-48 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[1056px] mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold text-foreground mb-6 leading-tight">
-            실제 화면으로 확인해보세요
+            실제 화면으로 확인하세요
           </h2>
         </div>
 
-        <div className="bg-gray-100 rounded-3xl p-8 sm:p-12">
-          {/* Preview Card */}
-          <div className="flex justify-center">
-            <div className="bg-white rounded-2xl p-8 shadow-lg w-[1056px]">
-              <div className="aspect-[9/4] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center relative overflow-hidden">
-                <div 
-                  key={currentSlide}
-                  className={`text-center ${isTransitioning ? 'animate-slide-out' : 'animate-slide-in'}`}
-                >
-                  <div className="w-20 h-20 bg-black rounded-xl flex items-center justify-center mx-auto mb-6">
-                    <i className={`ri ${slides[currentSlide].icon} text-3xl text-white`} />
-                  </div>
-                  <p className="text-base text-gray-600">{slides[currentSlide].title}</p>
-                </div>
-              </div>
-            </div>
+        <div className="flex justify-center">
+          <div className={`w-full max-w-[1056px] relative border border-gray-200 rounded-lg overflow-hidden transition-opacity duration-500 ease-in-out ${
+            isTransitioning ? 'opacity-0' : 'opacity-100'
+          }`}>
+            <img 
+              key={currentSlide}
+              src={slides[currentSlide].image}
+              alt={slides[currentSlide].title}
+              className="w-full h-auto object-contain"
+            />
           </div>
         </div>
 

@@ -39,8 +39,27 @@ const AuthenticatedLayout: React.FC<AuthenticatedLayoutProps> = ({ children }) =
   }, []);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+    try {
+      console.log('로그아웃 버튼 클릭됨');
+      await signOut();
+      console.log('로그아웃 완료, 홈페이지로 이동');
+      
+      // 강제 리디렉션 (replace 사용)
+      navigate('/', { replace: true });
+      
+      // 추가 보장을 위한 window.location 사용
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+      
+    } catch (error) {
+      console.error('로그아웃 처리 중 오류:', error);
+      // 오류가 발생해도 홈페이지로 이동
+      navigate('/', { replace: true });
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+    }
   };
 
   const navItems = [

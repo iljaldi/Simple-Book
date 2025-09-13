@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info, Receipt as ReceiptIcon } from 'lucide-react';
+import { 
+  Info, 
+  Receipt as ReceiptIcon, 
+  Upload,
+  CheckCircle, 
+  AlertTriangle, 
+  Clock, 
+  Link,
+  FileImage
+} from 'lucide-react';
 import { ReceiptUpload } from '@/components/receipts/ReceiptUpload';
 import { ReceiptList } from '@/components/receipts/ReceiptList';
 import { ReceiptDetail } from '@/components/receipts/ReceiptDetail';
@@ -9,13 +19,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 
 const Receipts: React.FC = () => {
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptWithTransaction | null>(null);
-  const { receipts } = useReceipts();
+  const { receipts, getReceiptsByStatus } = useReceipts();
 
   const stats = {
     total: receipts.length,
     matched: receipts.filter(r => r.transaction_id).length,
     needsMatching: receipts.filter(r => !r.transaction_id && r.ocr_status === 'done').length,
     failed: receipts.filter(r => r.ocr_status === 'failed').length,
+    pending: receipts.filter(r => r.ocr_status === 'pending').length,
   };
 
   const handleCreateTransaction = (receipt: ReceiptWithTransaction) => {
@@ -27,45 +38,97 @@ const Receipts: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-8">
-        <div>
+        {/* Header */}
+        <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">영수증 관리</h1>
-          <p className="text-gray-600">
-            영수증을 업로드하면 자동으로 OCR 처리되어 거래와 연결됩니다
-          </p>
+          <p className="text-gray-600">영수증을 업로드하면 자동으로 OCR 처리되어 거래와 연결됩니다</p>
         </div>
-        <div className="flex items-center gap-2">
-          {/* 액션 버튼 영역 */}
-        </div>
-      </div>
-      
-      <div className="space-y-8">
 
-        {/* Stats */}
-        {receipts.length > 0 && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-card rounded-lg p-4 border border-border">
-              <div className="text-2xl font-bold text-foreground">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">전체 영수증</div>
-            </div>
-            <div className="bg-success/5 rounded-lg p-4 border border-success/20">
-              <div className="text-2xl font-bold text-success">{stats.matched}</div>
-              <div className="text-sm text-success/80">연결 완료</div>
-            </div>
-            <div className="bg-warning/5 rounded-lg p-4 border border-warning/20">
-              <div className="text-2xl font-bold text-warning">{stats.needsMatching}</div>
-              <div className="text-sm text-warning/80">매칭 필요</div>
-            </div>
-            <div className="bg-destructive/5 rounded-lg p-4 border border-destructive/20">
-              <div className="text-2xl font-bold text-destructive">{stats.failed}</div>
-              <div className="text-sm text-destructive/80">처리 실패</div>
-            </div>
-          </div>
-        )}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          {/* 전체 영수증 */}
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <ReceiptIcon className="h-5 w-5 text-blue-600" />
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">전체 영수증</p>
+                <p className="text-2xl font-bold text-blue-600 mb-1">{stats.total}</p>
+                <p className="text-xs text-gray-500">총 업로드</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 연결 완료 */}
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">연결 완료</p>
+                <p className="text-2xl font-bold text-green-600 mb-1">{stats.matched}</p>
+                <p className="text-xs text-gray-500">거래 매칭됨</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 매칭 필요 */}
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                  <Link className="h-5 w-5 text-yellow-600" />
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">매칭 필요</p>
+                <p className="text-2xl font-bold text-yellow-600 mb-1">{stats.needsMatching}</p>
+                <p className="text-xs text-gray-500">수동 연결 필요</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 처리 중 */}
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-purple-600" />
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">처리 중</p>
+                <p className="text-2xl font-bold text-purple-600 mb-1">{stats.pending}</p>
+                <p className="text-xs text-gray-500">OCR 처리 중</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 처리 실패 */}
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">처리 실패</p>
+                <p className="text-2xl font-bold text-red-600 mb-1">{stats.failed}</p>
+                <p className="text-xs text-gray-500">재처리 필요</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Usage Guide */}
-        <Alert className="border-primary/20 bg-primary/5">
+        <Alert className="border-primary/20 bg-primary/5 mb-8">
           <Info className="h-4 w-4" />
           <AlertDescription className="text-sm text-muted-foreground">
             <strong>사용 가이드:</strong> 영수증을 업로드하면 OCR로 텍스트를 추출하고, 
@@ -73,40 +136,97 @@ const Receipts: React.FC = () => {
             새로운 거래를 생성할 수 있습니다.
           </AlertDescription>
         </Alert>
-      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Upload Section */}
-        <div className="xl:col-span-1">
-          <ReceiptUpload />
-        </div>
+        {/* Main Content - Equal Width Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Upload Section */}
+          <div>
+            <Card className="border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Upload className="h-4 w-4 text-blue-600" />
+                  </div>
+                  영수증 업로드
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ReceiptUpload />
+              </CardContent>
+            </Card>
 
-        {/* Receipt List */}
-        <div className="xl:col-span-2">
-          <ReceiptList onReceiptSelect={setSelectedReceipt} />
-        </div>
-      </div>
 
-      {/* Receipt Detail Sheet */}
-      <Sheet open={!!selectedReceipt} onOpenChange={() => setSelectedReceipt(null)}>
-        <SheetContent className="w-full sm:max-w-4xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <ReceiptIcon className="h-5 w-5" />
-              영수증 상세
-            </SheetTitle>
-          </SheetHeader>
-          <div className="mt-6">
-            {selectedReceipt && (
-              <ReceiptDetail
-                receipt={selectedReceipt}
-                onClose={() => setSelectedReceipt(null)}
-                onCreateTransaction={handleCreateTransaction}
-              />
-            )}
+            {/* Tips */}
+            <Card className="border border-gray-200 mt-6">
+              <CardHeader>
+                <CardTitle className="text-gray-900">💡 업로드 팁</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 text-sm text-gray-600">
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium text-gray-900">명확한 촬영</p>
+                    <p>영수증이 화면에 전체가 보이도록 촬영하세요</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium text-gray-900">조명 주의</p>
+                    <p>그림자나 반사를 피해 촬영하세요</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium text-gray-900">자동 매칭</p>
+                    <p>OCR 결과로 기존 거래와 자동 연결됩니다</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </SheetContent>
-      </Sheet>
+
+          {/* Receipt List */}
+          <div>
+            <Card className="border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                    <FileImage className="h-4 w-4 text-gray-600" />
+                  </div>
+                  영수증 목록
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ReceiptList onReceiptSelect={setSelectedReceipt} />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Receipt Detail Sheet */}
+        <Sheet open={!!selectedReceipt} onOpenChange={() => setSelectedReceipt(null)}>
+          <SheetContent className="w-full sm:max-w-4xl overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <ReceiptIcon className="h-5 w-5" />
+                영수증 상세
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              {selectedReceipt && (
+                <ReceiptDetail
+                  receipt={selectedReceipt}
+                  onClose={() => setSelectedReceipt(null)}
+                  onCreateTransaction={handleCreateTransaction}
+                />
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );

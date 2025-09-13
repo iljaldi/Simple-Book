@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 const CTASection = () => {
   return (
     <section className="bg-white pt-48 pb-48 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto text-center">
+      <div className="max-w-[1056px] mx-auto text-center">
         <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-[1.2] mb-6">
-          <div>1인 기업·프리랜서 장부 관리,</div>
+          <div>독립한 디자이너의 장부 관리,</div>
           <div className="mt-3 text-purple-600">Simple Book과 시작하세요</div>
         </h2>
         

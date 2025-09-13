@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 const UserTypesSection = () => {
   return (
     <section className="px-4 pt-48 pb-48 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[1056px] mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold text-foreground mb-6 leading-tight">
             <div className="text-purple-600">사업자등록 여부와 상관없이</div>
@@ -46,10 +46,9 @@ const UserTypesSection = () => {
               </div>
             </div>
 
-            <div className="bg-gray-100 rounded-lg p-4 border border-gray-200 mt-6">
-              <p className="text-sm text-gray-700">
-                <i className="ri-lightbulb-line mr-2"></i>
-                <span className="font-semibold">팁:</span> 사업자등록 없이도 연 2천만원 이상 수입이 있으면 종합소득세 신고 의무가 있어요
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mt-6">
+              <p className="text-sm text-blue-800">
+                사업자등록 없이도 연 2천만원 이상 수입이 있으면 종합소득세 신고 의무가 있어요
               </p>
             </div>
           </Card>
@@ -86,19 +85,11 @@ const UserTypesSection = () => {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-3">
-                <i className="ri-check-line h-5 w-5 text-success flex-shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-semibold text-foreground mb-1">세무사 협업 지원</div>
-                  <div className="text-sm text-muted-foreground">세무사와 실시간으로 자료를 공유하고 상담 받기</div>
-                </div>
-              </div>
             </div>
 
-            <div className="bg-gray-100 rounded-lg p-4 border border-gray-200 mt-6">
-              <p className="text-sm text-gray-700">
-                <i className="ri-star-line mr-2"></i>
-                <span className="font-semibold">추천:</span> 사업자 프리랜서라면 부가세 신고까지 자동화할 수 있어요
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mt-6">
+              <p className="text-sm text-blue-800">
+                사업자 프리랜서라면 부가세 신고까지 자동화할 수 있어요
               </p>
             </div>
           </Card>

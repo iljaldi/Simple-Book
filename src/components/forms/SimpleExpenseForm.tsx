@@ -23,7 +23,8 @@ import {
   Receipt,
   CreditCard,
   Building2,
-  Smartphone
+  Smartphone,
+  Info
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -187,7 +188,6 @@ export const SimpleExpenseForm: React.FC<SimpleExpenseFormProps> = ({
         counterparty_biz_no: data.counterparty_biz_no || null,
         category: data.category_id ? expenseCategories.find(c => c.id === data.category_id)?.name : null,
         taxation_type: data.taxation_type as 'TAXABLE' | 'ZERO_RATED' | 'EXEMPT',
-        supply_amount: parseFloat(data.supply_amount) || 0,
         vat_amount: parseFloat(data.vat_amount) || 0,
         amount_gross: parseFloat(data.total_amount),
         business_use_ratio: data.business_use_ratio / 100,
@@ -196,6 +196,8 @@ export const SimpleExpenseForm: React.FC<SimpleExpenseFormProps> = ({
         project: data.project || null,
         description: data.description || null,
         status: 'confirmed' as 'draft' | 'confirmed',
+        currency: 'KRW',
+        is_deductible: true,
       };
 
       if (initialData?.id) {
@@ -231,7 +233,9 @@ export const SimpleExpenseForm: React.FC<SimpleExpenseFormProps> = ({
         }
       }
     } catch (error) {
-      toast.error(initialData?.id ? '수정 중 오류가 발생했습니다.' : '저장 중 오류가 발생했습니다.');
+      console.error('지출 저장 오류:', error);
+      console.error('오류 상세:', error);
+      toast.error(`지출 저장 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };
 
@@ -378,6 +382,15 @@ export const SimpleExpenseForm: React.FC<SimpleExpenseFormProps> = ({
             />
           </CardContent>
         </Card>
+
+        {/* 사용 가이드 */}
+        <Alert className="border-primary/20 bg-primary/5">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-sm text-muted-foreground">
+            필수 정보만 입력해도 거래를 저장할 수 있습니다. 
+            추가 옵션은 "상세 정보" 섹션에서 설정하세요.
+          </AlertDescription>
+        </Alert>
 
         {/* 상세 정보 (선택 섹션) */}
         <Collapsible open={isDetailMode} onOpenChange={setIsDetailMode}>

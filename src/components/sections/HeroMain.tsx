@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const HeroMain = () => {
   const [isFeatureDropdownOpen, setIsFeatureDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const { user } = useAuth();
 
 
@@ -16,6 +17,14 @@ const HeroMain = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    // 페이지 로드 시 애니메이션 시작
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -31,14 +40,17 @@ const HeroMain = () => {
     >
       {/* Background image with 50% transparency */}
       <div 
-        className="absolute inset-0"
+        className={`absolute inset-0 transform transition-all duration-1000 ease-out ${
+          isLoaded 
+            ? 'opacity-25' 
+            : 'opacity-0'
+        }`}
         style={{
           transform: 'none',
           backgroundImage: 'url(/images/main-hero-bg.png)',
           backgroundSize: 'auto 80%',
           backgroundPosition: 'center center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.25
+          backgroundRepeat: 'no-repeat'
         }}
       ></div>
       {/* Navigation */}
@@ -102,22 +114,54 @@ const HeroMain = () => {
         id="hero" 
         className="relative z-10 px-4 pt-20 pb-4 sm:px-6 lg:px-8 mt-16 sm:pt-28"
       >
-        <div className="max-w-4xl mx-auto w-full">
+        <div className="max-w-[1056px] mx-auto w-full">
           <div className="text-center">
             {/* Main Headline */}
             <div className="mb-8 sm:mb-12">
               <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-[1.2] mb-4 sm:mb-6">
-                <div>독립한 디자이너를 위한</div>
-                <div className="mt-2 sm:mt-3 text-purple-600">가장 쉬운 간편 장부</div>
+                <div 
+                  className={`transform transition-all duration-700 ease-out ${
+                    isLoaded 
+                      ? 'translate-y-0 opacity-100' 
+                      : 'translate-y-8 opacity-0'
+                  }`}
+                  style={{ transitionDelay: '0.1s' }}
+                >
+                  독립한 디자이너를 위한
+                </div>
+                <div 
+                  className={`mt-2 sm:mt-3 text-purple-600 transform transition-all duration-700 ease-out ${
+                    isLoaded 
+                      ? 'translate-y-0 opacity-100' 
+                      : 'translate-y-8 opacity-0'
+                  }`}
+                  style={{ transitionDelay: '0.3s' }}
+                >
+                  가장 쉬운 간편 장부
+                </div>
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-6 sm:mb-8 leading-relaxed max-w-2xl mx-auto px-4">
+              <p 
+                className={`text-base sm:text-lg md:text-xl text-gray-700 mb-6 sm:mb-8 leading-relaxed max-w-2xl mx-auto px-4 transform transition-all duration-700 ease-out ${
+                  isLoaded 
+                    ? 'translate-y-0 opacity-100' 
+                    : 'translate-y-8 opacity-0'
+                }`}
+                style={{ transitionDelay: '0.5s' }}
+              >
                 수입·지출 관리부터 홈택스 PDF 추출까지<br />
                 단 5분이면 충분합니다.
               </p>
             </div>
 
             {/* CTA Button */}
-            <div className="flex justify-center mb-12 sm:mb-16 px-4">
+            <div 
+              className={`flex justify-center mb-12 sm:mb-16 px-4 transform transition-all duration-700 ease-out ${
+                isLoaded 
+                  ? 'translate-y-0 opacity-100' 
+                  : 'translate-y-8 opacity-0'
+              }`}
+              style={{ transitionDelay: '0.7s' }}
+            >
               <Button 
                 size="lg"
                 className="bg-black text-white text-base sm:text-lg px-6 sm:px-8 py-3 rounded-full hover:bg-gray-800 transition-colors font-medium w-full sm:w-auto"
@@ -130,7 +174,14 @@ const HeroMain = () => {
             </div>
 
             {/* Trust Section */}
-            <div className="text-center mb-8 px-4">
+            <div 
+              className={`text-center mb-8 px-4 transform transition-all duration-700 ease-out ${
+                isLoaded 
+                  ? 'translate-y-0 opacity-100' 
+                  : 'translate-y-8 opacity-0'
+              }`}
+              style={{ transitionDelay: '0.9s' }}
+            >
               <p className="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6">
                 이미 많은 1인 기업·프리랜서 디자이너들이 사용하고 있습니다
               </p>
@@ -149,16 +200,21 @@ const HeroMain = () => {
       </section>
 
       {/* Preview Section */}
-      <section className="relative z-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-center">
-            <img 
-              src="/images/main-hero.png" 
-              alt="Simple Book 메인 화면" 
-              className="relative z-20 w-full max-w-[1056px]"
-            />
-          </div>
-        </div>
+      <section className="relative z-20 flex justify-center">
+        <img 
+          src="/images/main-hero.png" 
+          alt="Simple Book 메인 화면" 
+          className={`relative z-20 w-full max-w-[1056px] drop-shadow-lg transform transition-all duration-700 ease-out ${
+            isLoaded 
+              ? 'translate-y-0 opacity-100' 
+              : 'translate-y-8 opacity-0'
+          }`}
+          style={{
+            filter: 'drop-shadow(0 20px 40px rgba(0, 0, 0, 0.08)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.06)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.03))',
+            animation: 'float 3s ease-in-out infinite',
+            transitionDelay: '1.1s'
+          }}
+        />
       </section>
     </div>
   );

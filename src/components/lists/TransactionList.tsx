@@ -245,7 +245,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
     );
   }
 
-  if (transactions.length === 0) {
+  if (!isLoading && transactions.length === 0) {
     return (
       <Card className="shadow-card border-border">
         <CardHeader>

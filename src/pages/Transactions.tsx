@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { TransactionList } from '@/components/lists/TransactionList';
@@ -11,6 +12,7 @@ import { DateRange } from 'react-day-picker';
 
 const Transactions: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<{
     dateRange?: DateRange;
@@ -29,6 +31,8 @@ const Transactions: React.FC = () => {
         try {
           await generateDummyTransactions(user.id);
           console.log('Transactions 컴포넌트에서 더미 데이터 생성 완료');
+          // 데이터 생성 후 React Query 캐시 무효화하여 UI 업데이트
+          queryClient.invalidateQueries({ queryKey: ['transactions'] });
         } catch (error) {
           console.error('Transactions 컴포넌트에서 더미 데이터 생성 실패:', error);
         }
@@ -38,7 +42,7 @@ const Transactions: React.FC = () => {
     };
 
     generateData();
-  }, [user?.id]);
+  }, [user?.id, queryClient]);
 
   const handleSearchChange = (search: string) => {
     setSearchQuery(search);

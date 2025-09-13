@@ -30,19 +30,20 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      {/* 사용 가이드 */}
-      <Alert className="border-primary/20 bg-primary/5">
-        <Info className="h-4 w-4" />
-        <AlertDescription className="text-sm text-muted-foreground">
-          필수 정보만 입력해도 거래를 저장할 수 있습니다. 
-          추가 옵션은 "상세 정보" 섹션에서 설정하세요.
-        </AlertDescription>
-      </Alert>
-
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'income' | 'expense')} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="income">수입</TabsTrigger>
-          <TabsTrigger value="expense">지출</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 h-12 bg-gray-100 rounded-lg p-1">
+          <TabsTrigger 
+            value="income" 
+            className="rounded-md h-10 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 font-medium"
+          >
+            수입
+          </TabsTrigger>
+          <TabsTrigger 
+            value="expense" 
+            className="rounded-md h-10 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 font-medium"
+          >
+            지출
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="income" className="mt-6">

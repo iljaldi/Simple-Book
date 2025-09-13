@@ -155,34 +155,31 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
             {filteredReceipts.map((receipt) => (
               <Card
                 key={receipt.id}
-                className={cn(
-                  "shadow-card border-border cursor-pointer transition-smooth hover:shadow-lg",
-                  receipt.transaction_id && "border-l-4 border-l-success"
-                )}
+                className="shadow-card border-border cursor-pointer transition-smooth hover:shadow-lg"
                 onClick={() => onReceiptSelect?.(receipt)}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
+                <CardContent className="p-0">
+                  <div className="flex items-start gap-4 p-0">
                     {/* Thumbnail */}
                     <div className="flex-shrink-0">
                       {receipt.file_url ? (
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted">
+                        <div className="w-32 h-32 rounded-lg overflow-hidden bg-muted">
                           <img
                             src={receipt.file_url}
                             alt={receipt.original_filename || '영수증'}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                             loading="lazy"
                           />
                         </div>
                       ) : (
-                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
+                        <div className="w-32 h-32 rounded-lg bg-muted flex items-center justify-center">
                           <FileImage className="h-8 w-8 text-muted-foreground" />
                         </div>
                       )}
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 p-4">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1 min-w-0">
                           <h4 className="font-medium text-foreground truncate">

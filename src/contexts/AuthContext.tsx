@@ -52,7 +52,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      console.log('로그아웃 시작');
+      
+      // Supabase 로그아웃
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Supabase 로그아웃 오류:', error);
+      }
+      
+      // localStorage 완전 클리어
+      try {
+        localStorage.clear();
+        console.log('localStorage 클리어 완료');
+      } catch (storageError) {
+        console.error('localStorage 클리어 오류:', storageError);
+      }
+      
+      // sessionStorage도 클리어
+      try {
+        sessionStorage.clear();
+        console.log('sessionStorage 클리어 완료');
+      } catch (storageError) {
+        console.error('sessionStorage 클리어 오류:', storageError);
+      }
+      
+      // 상태 강제 초기화
+      setUser(null);
+      setSession(null);
+      setLoading(false);
+      
+      console.log('로그아웃 성공 - 모든 상태 초기화 완료');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      // 오류가 발생해도 상태는 초기화
+      setUser(null);
+      setSession(null);
+      setLoading(false);
+      throw error;
+    }
   };
 
   const value = {

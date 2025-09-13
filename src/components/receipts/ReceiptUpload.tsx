@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Upload, Camera, FileImage, AlertTriangle, CheckCircle, X } from 'lucide-react';
+import { Upload, Camera, FileImage, AlertTriangle, CheckCircle, X, RotateCcw, Square, XCircle } from 'lucide-react';
 import { useReceipts } from '@/hooks/useReceipts';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +18,11 @@ interface UploadingFile {
 export const ReceiptUpload: React.FC = () => {
   const { uploadReceipt, isUploading } = useReceipts();
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const newUploadingFiles = acceptedFiles.map(file => ({
@@ -112,10 +117,156 @@ export const ReceiptUpload: React.FC = () => {
     onDrop([file]);
   };
 
-  const handleCameraCapture = () => {
-    // TODO: Implement camera capture
-    console.log('Camera capture not implemented yet');
+  const startCamera = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment', // 후면 카메라 우선
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+      
+      setStream(mediaStream);
+      setIsCameraOpen(true);
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (error) {
+      console.error('카메라 접근 오류:', error);
+      alert('카메라에 접근할 수 없습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.');
+    }
   };
+
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setIsCameraOpen(false);
+    setCapturedImage(null);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      
+      if (context) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0);
+        
+        const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        setCapturedImage(imageDataUrl);
+      }
+    }
+  };
+
+  const retakePhoto = () => {
+    setCapturedImage(null);
+  };
+
+  const savePhoto = async () => {
+    if (capturedImage && canvasRef.current) {
+      canvasRef.current.toBlob(async (blob) => {
+        if (blob) {
+          const file = new File([blob], `receipt_${Date.now()}.jpg`, {
+            type: 'image/jpeg'
+          });
+          
+          await onDrop([file]);
+          stopCamera();
+        }
+      }, 'image/jpeg', 0.8);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
+
+  if (isCameraOpen) {
+    return (
+      <div className="space-y-6">
+        <Card className="shadow-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              영수증 촬영
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!capturedImage ? (
+              <div className="space-y-4">
+                <div className="relative bg-black rounded-lg overflow-hidden">
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-64 sm:h-80 object-cover"
+                  />
+                  <div className="absolute inset-0 border-2 border-white border-dashed m-4 rounded-lg pointer-events-none">
+                    <div className="absolute top-2 left-2 right-2 text-center">
+                      <p className="text-white text-sm bg-black/50 px-2 py-1 rounded">
+                        영수증이 테두리 안에 전체가 보이도록 촬영하세요
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button onClick={capturePhoto} className="flex-1">
+                    <Square className="h-4 w-4 mr-2" />
+                    촬영하기
+                  </Button>
+                  <Button onClick={stopCamera} variant="outline">
+                    <XCircle className="h-4 w-4 mr-2" />
+                    취소
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative bg-black rounded-lg overflow-hidden">
+                  <img
+                    src={capturedImage}
+                    alt="촬영된 영수증"
+                    className="w-full h-64 sm:h-80 object-cover"
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button onClick={savePhoto} className="flex-1">
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    저장하기
+                  </Button>
+                  <Button onClick={retakePhoto} variant="outline">
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    다시 촬영
+                  </Button>
+                  <Button onClick={stopCamera} variant="outline">
+                    <XCircle className="h-4 w-4 mr-2" />
+                    취소
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            <canvas ref={canvasRef} className="hidden" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -127,11 +278,11 @@ export const ReceiptUpload: React.FC = () => {
             영수증 업로드
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div
             {...getRootProps()}
             className={cn(
-              "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-smooth",
+              "border-2 border-dashed rounded-lg p-0 text-center cursor-pointer transition-smooth h-48 flex flex-col items-center justify-center",
               isDragActive && !isDragReject && "border-primary bg-primary/5",
               isDragReject && "border-destructive bg-destructive/5",
               !isDragActive && "border-border hover:border-primary/50 hover:bg-primary/5"
@@ -161,13 +312,17 @@ export const ReceiptUpload: React.FC = () => {
             )}
           </div>
 
-          <div className="flex gap-2 mt-4">
-            <Button variant="outline" className="transition-smooth flex-1">
+          <div className="flex gap-2 mt-4 p-4">
+            <Button 
+              {...getRootProps()} 
+              variant="outline" 
+              className="transition-smooth flex-1"
+            >
               <Upload className="h-4 w-4 mr-2" />
               파일 선택
             </Button>
             <Button 
-              onClick={handleCameraCapture}
+              onClick={startCamera}
               className="transition-smooth flex-1"
             >
               <Camera className="h-4 w-4 mr-2" />

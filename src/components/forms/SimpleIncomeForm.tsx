@@ -104,15 +104,19 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
       description: initialData.description || '',
     } : {
       date: new Date(),
+      counterparty_name: '',
+      total_amount_received: '',
+      payment_method: 'transfer',
+      category: '',
+      evidence_type: 'TAX_INVOICE',
       taxation_type: 'TAXABLE',
       supply_amount: '',
       vat_amount: '0',
-      total_amount_received: '',
       has_withholding: false,
       withholding_income_tax: '0',
       withholding_local_tax: '0',
-      payment_method: 'transfer',
-      evidence_type: 'TAX_INVOICE',
+      project: '',
+      description: '',
     },
   });
 
@@ -170,16 +174,16 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
         counterparty_name: data.counterparty_name,
         category: data.category || null,
         taxation_type: data.taxation_type as 'TAXABLE' | 'ZERO_RATED' | 'EXEMPT',
-        supply_amount: parseFloat(data.supply_amount) || 0,
         vat_amount: parseFloat(data.vat_amount) || 0,
         amount_gross: parseFloat(data.total_amount_received),
-        withholding_income_tax: data.has_withholding ? parseFloat(data.withholding_income_tax) : 0,
-        withholding_local_tax: data.has_withholding ? parseFloat(data.withholding_local_tax) : 0,
+        withholding_income_tax: data.has_withholding ? parseFloat(data.withholding_income_tax) : null,
+        withholding_local_tax: data.has_withholding ? parseFloat(data.withholding_local_tax) : null,
         payment_method: data.payment_method as 'transfer' | 'card' | 'cash' | 'etc',
         evidence_type: (data.evidence_type || 'NONE') as 'TAX_INVOICE' | 'INVOICE' | 'CARD' | 'CASH_RCPT' | 'SIMPLE_RCPT' | 'NONE',
         project: data.project || null,
         description: data.description || null,
         status: 'confirmed' as 'draft' | 'confirmed',
+        currency: 'KRW',
       };
 
       if (initialData?.id) {
@@ -195,15 +199,19 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
           toast.success('수입이 저장되었습니다. 새 거래를 입력하세요.');
           form.reset({
             date: new Date(),
+            counterparty_name: '',
+            total_amount_received: '',
+            payment_method: data.payment_method, // 결제수단은 유지
+            category: '',
+            evidence_type: data.evidence_type || 'TAX_INVOICE',
             taxation_type: 'TAXABLE',
             supply_amount: '',
             vat_amount: '0',
-            total_amount_received: '',
             has_withholding: false,
             withholding_income_tax: '0',
             withholding_local_tax: '0',
-            payment_method: data.payment_method, // 결제수단은 유지
-            evidence_type: data.evidence_type || 'TAX_INVOICE',
+            project: '',
+            description: '',
           });
           onContinueAdding?.();
         } else {
@@ -212,7 +220,9 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
         }
       }
     } catch (error) {
-      toast.error(initialData?.id ? '수정 중 오류가 발생했습니다.' : '저장 중 오류가 발생했습니다.');
+      console.error('수입 저장 오류:', error);
+      console.error('오류 상세:', error);
+      toast.error(`수입 저장 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     }
   };
 
@@ -359,6 +369,15 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
             />
           </CardContent>
         </Card>
+
+        {/* 사용 가이드 */}
+        <Alert className="border-primary/20 bg-primary/5">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-sm text-muted-foreground">
+            필수 정보만 입력해도 거래를 저장할 수 있습니다. 
+            추가 옵션은 "상세 정보" 섹션에서 설정하세요.
+          </AlertDescription>
+        </Alert>
 
         {/* 상세 정보 (선택 섹션) */}
         <Collapsible open={isDetailMode} onOpenChange={setIsDetailMode}>
