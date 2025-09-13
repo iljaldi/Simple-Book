@@ -80,7 +80,7 @@ export const IncomeWizard: React.FC<IncomeWizardProps> = ({ onSuccess, onContinu
   const [continueAdding, setContinueAdding] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isSimpleMode, setIsSimpleMode] = useState(true);
-  const { createTransaction, isCreating } = useTransactions();
+  const { createTransactionAsync, isCreating } = useTransactions();
   const { categories } = useCategories();
 
   const form = useForm<IncomeFormData>({
@@ -215,7 +215,7 @@ export const IncomeWizard: React.FC<IncomeWizardProps> = ({ onSuccess, onContinu
 
   const onSubmit = async (data: IncomeFormData) => {
     try {
-      await createTransaction({
+      await createTransactionAsync({
         type: 'income',
         amount_gross: parseFloat(data.total_amount_received),
         counterparty_name: data.counterparty,

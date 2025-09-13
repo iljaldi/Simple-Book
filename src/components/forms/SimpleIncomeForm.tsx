@@ -82,7 +82,7 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
 }) => {
   const [isDetailMode, setIsDetailMode] = useState(!!initialData?.project || !!initialData?.description);
   const [saveType, setSaveType] = useState<'save' | 'continue'>('save');
-  const { createTransaction, updateTransaction, isCreating } = useTransactions();
+  const { createTransactionAsync, updateTransaction, isCreating } = useTransactions();
   const { categories } = useCategories();
 
   const form = useForm<SimpleIncomeFormData>({
@@ -193,7 +193,7 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
         onSuccess();
       } else {
         // 새 거래 생성 모드
-        await createTransaction(transactionData);
+        await createTransactionAsync(transactionData);
         
         if (saveType === 'continue') {
           toast.success('수입이 저장되었습니다. 새 거래를 입력하세요.');

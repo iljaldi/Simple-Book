@@ -30,17 +30,23 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'income' | 'expense')} className="w-full">
+      <Tabs value={activeTab} onValueChange={editingTransaction ? undefined : (value) => setActiveTab(value as 'income' | 'expense')} className="w-full">
         <TabsList className="grid w-full grid-cols-2 h-12 bg-gray-100 rounded-lg p-1">
           <TabsTrigger 
             value="income" 
-            className="rounded-md h-10 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 font-medium"
+            className={`rounded-md h-10 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 font-medium ${
+              editingTransaction && editingTransaction.type !== 'income' ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={editingTransaction && editingTransaction.type !== 'income'}
           >
             수입
           </TabsTrigger>
           <TabsTrigger 
             value="expense" 
-            className="rounded-md h-10 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 font-medium"
+            className={`rounded-md h-10 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm text-gray-600 font-medium ${
+              editingTransaction && editingTransaction.type !== 'expense' ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={editingTransaction && editingTransaction.type !== 'expense'}
           >
             지출
           </TabsTrigger>

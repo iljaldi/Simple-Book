@@ -57,7 +57,7 @@ export const useTransactions = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
       toast({
         title: '거래가 등록되었습니다',
         description: '새로운 거래 내역이 성공적으로 추가되었습니다.',
@@ -86,7 +86,7 @@ export const useTransactions = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
       toast({
         title: '거래가 수정되었습니다',
         description: '거래 내역이 성공적으로 업데이트되었습니다.',
@@ -112,7 +112,7 @@ export const useTransactions = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
       toast({
         title: '거래가 삭제되었습니다',
         description: '거래 내역이 성공적으로 삭제되었습니다.',
@@ -138,5 +138,8 @@ export const useTransactions = () => {
     isCreating: createTransaction.isPending,
     isUpdating: updateTransaction.isPending,
     isDeleting: deleteTransaction.isPending,
+    createTransactionAsync: createTransaction.mutateAsync,
+    updateTransactionAsync: updateTransaction.mutateAsync,
+    deleteTransactionAsync: deleteTransaction.mutateAsync,
   };
 };

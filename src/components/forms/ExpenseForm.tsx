@@ -79,7 +79,7 @@ interface ExpenseFormProps {
 }
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSuccess, onContinueAdding }) => {
-  const { createTransaction, isCreating } = useTransactions();
+  const { createTransactionAsync, isCreating } = useTransactions();
   const { categories } = useCategories();
   const { toast } = useToast();
   const expenseCategories = categories.filter(cat => cat.transaction_type === 'expense');
@@ -175,7 +175,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ onSuccess, onContinueA
       const vatAmount = parseFloat(data.vat_amount || '0');
       const totalAmount = supplyAmount + vatAmount;
       
-      await createTransaction({
+      await createTransactionAsync({
         type: 'expense',
         amount_gross: totalAmount,
         vat_amount: vatAmount,

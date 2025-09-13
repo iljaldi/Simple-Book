@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, Lightbulb } from 'lucide-react';
 import { TransactionForm } from '@/components/forms/TransactionForm';
 
 const AddTransaction: React.FC = () => {
@@ -57,53 +57,19 @@ const AddTransaction: React.FC = () => {
 
           {/* Quick Actions & Tips */}
           <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card className="border border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-gray-900">빠른 추가</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-3">
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start gap-2 h-12"
-                    onClick={() => {/* 수입 폼으로 이동 */}}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <Plus className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div className="text-left">
-                      <div className="font-medium">수입 추가</div>
-                      <div className="text-sm text-gray-500">프로젝트 수입 등</div>
-                    </div>
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start gap-2 h-12"
-                    onClick={() => {/* 지출 폼으로 이동 */}}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                      <Minus className="h-4 w-4 text-red-600" />
-                    </div>
-                    <div className="text-left">
-                      <div className="font-medium">지출 추가</div>
-                      <div className="text-sm text-gray-500">사업비, 고정비 등</div>
-                    </div>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Tips */}
             <Card className="border border-gray-200">
               <CardHeader>
-                <CardTitle className="text-gray-900">💡 팁</CardTitle>
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-yellow-500" />
+                  팁
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4 text-sm text-gray-600">
                   <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-purple-600 mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-black mt-2 flex-shrink-0"></div>
                     <div>
                       <p className="font-medium text-gray-900">카테고리 분류</p>
                       <p>수입과 지출을 명확히 구분하여 기록하세요</p>
@@ -111,7 +77,7 @@ const AddTransaction: React.FC = () => {
                   </div>
                   
                   <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-purple-600 mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-black mt-2 flex-shrink-0"></div>
                     <div>
                       <p className="font-medium text-gray-900">세금 계산</p>
                       <p>부가세 포함 여부를 정확히 표시하세요</p>
@@ -119,7 +85,7 @@ const AddTransaction: React.FC = () => {
                   </div>
                   
                   <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-purple-600 mt-2 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-black mt-2 flex-shrink-0"></div>
                     <div>
                       <p className="font-medium text-gray-900">영수증 첨부</p>
                       <p>증빙 자료를 함께 보관하세요</p>
