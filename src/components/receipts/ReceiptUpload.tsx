@@ -271,17 +271,12 @@ export const ReceiptUpload: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Upload Area */}
-      <Card className="shadow-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">
-            영수증 업로드
-          </CardTitle>
-        </CardHeader>
+      <Card className="shadow-card border-0">
         <CardContent className="p-0">
           <div
             {...getRootProps()}
             className={cn(
-              "border-2 border-dashed rounded-lg p-0 text-center cursor-pointer transition-smooth h-48 flex flex-col items-center justify-center",
+              "border-2 border-dashed rounded-lg p-0 text-center cursor-pointer transition-smooth h-80 flex flex-col items-center justify-center",
               isDragActive && !isDragReject && "border-primary bg-primary/5",
               isDragReject && "border-destructive bg-destructive/5",
               !isDragActive && "border-border hover:border-primary/50 hover:bg-primary/5"
@@ -311,18 +306,18 @@ export const ReceiptUpload: React.FC = () => {
             )}
           </div>
 
-          <div className="flex gap-2 mt-4 p-4">
+          <div className="flex gap-2 mt-4 px-0">
             <Button 
               {...getRootProps()} 
               variant="outline" 
-              className="transition-smooth flex-1"
+              className="transition-smooth flex-1 h-12"
             >
               <Upload className="h-4 w-4 mr-2" />
               파일 선택
             </Button>
             <Button 
               onClick={startCamera}
-              className="transition-smooth flex-1"
+              className="transition-smooth flex-1 h-12"
             >
               <Camera className="h-4 w-4 mr-2" />
               사진 촬영

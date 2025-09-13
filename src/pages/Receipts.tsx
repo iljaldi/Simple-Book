@@ -9,7 +9,8 @@ import {
   AlertTriangle, 
   Clock, 
   Link,
-  FileImage
+  FileImage,
+  Lightbulb
 } from 'lucide-react';
 import { ReceiptUpload } from '@/components/receipts/ReceiptUpload';
 import { ReceiptList } from '@/components/receipts/ReceiptList';
@@ -140,7 +141,7 @@ const Receipts: React.FC = () => {
         {/* Main Content - Equal Width Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Upload Section */}
-          <div>
+          <div className="flex flex-col">
             <Card className="border border-gray-200">
               <CardHeader>
                 <CardTitle className="text-gray-900">
@@ -155,11 +156,14 @@ const Receipts: React.FC = () => {
             {/* Tips */}
             <Card className="border border-gray-200 mt-6">
               <CardHeader>
-                <CardTitle className="text-gray-900">💡 업로드 팁</CardTitle>
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-yellow-500" />
+                  업로드 팁
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 text-sm text-gray-600">
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 rounded-full bg-black mt-2 flex-shrink-0"></div>
                   <div>
                     <p className="font-medium text-gray-900">명확한 촬영</p>
                     <p>영수증이 화면에 전체가 보이도록 촬영하세요</p>
@@ -167,7 +171,7 @@ const Receipts: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 rounded-full bg-black mt-2 flex-shrink-0"></div>
                   <div>
                     <p className="font-medium text-gray-900">조명 주의</p>
                     <p>그림자나 반사를 피해 촬영하세요</p>
@@ -175,7 +179,7 @@ const Receipts: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0"></div>
+                  <div className="w-2 h-2 rounded-full bg-black mt-2 flex-shrink-0"></div>
                   <div>
                     <p className="font-medium text-gray-900">자동 매칭</p>
                     <p>OCR 결과로 기존 거래와 자동 연결됩니다</p>
@@ -186,14 +190,14 @@ const Receipts: React.FC = () => {
           </div>
 
           {/* Receipt List */}
-          <div>
-            <Card className="border border-gray-200">
+          <div className="flex flex-col">
+            <Card className="border border-gray-200 flex-1">
               <CardHeader>
                 <CardTitle className="text-gray-900">
                   영수증 목록
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1">
                 <ReceiptList onReceiptSelect={setSelectedReceipt} />
               </CardContent>
             </Card>

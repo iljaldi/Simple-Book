@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Search, 
   Filter, 
@@ -29,10 +30,17 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
   const { receipts, getReceiptsByStatus, deleteReceipt } = useReceipts();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterOptions, setFilterOptions] = useState({
+    dateRange: '',
+    fileType: '',
+    status: ''
+  });
 
   const filteredReceipts = useMemo(() => {
     let receiptList = getReceiptsByStatus(activeTab === 'all' ? undefined : activeTab);
     
+    // 검색어 필터
     if (searchQuery) {
       receiptList = receiptList.filter(receipt => 
         receipt.original_filename?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -41,8 +49,62 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
       );
     }
 
+    // 날짜 범위 필터
+    if (filterOptions.dateRange) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      receiptList = receiptList.filter(receipt => {
+        const receiptDate = new Date(receipt.uploaded_at);
+        const receiptDateOnly = new Date(receiptDate.getFullYear(), receiptDate.getMonth(), receiptDate.getDate());
+        
+        switch (filterOptions.dateRange) {
+          case 'today':
+            return receiptDateOnly.getTime() === today.getTime();
+          case 'week':
+            const weekAgo = new Date(today);
+            weekAgo.setDate(today.getDate() - 7);
+            return receiptDateOnly >= weekAgo;
+          case 'month':
+            const monthAgo = new Date(today);
+            monthAgo.setMonth(today.getMonth() - 1);
+            return receiptDateOnly >= monthAgo;
+          case 'year':
+            const yearAgo = new Date(today);
+            yearAgo.setFullYear(today.getFullYear() - 1);
+            return receiptDateOnly >= yearAgo;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // 파일 형식 필터
+    if (filterOptions.fileType) {
+      receiptList = receiptList.filter(receipt => {
+        const filename = receipt.original_filename?.toLowerCase() || '';
+        return filename.endsWith(`.${filterOptions.fileType}`);
+      });
+    }
+
+    // 처리 상태 필터
+    if (filterOptions.status) {
+      receiptList = receiptList.filter(receipt => {
+        if (filterOptions.status === 'matched') {
+          return receipt.transaction_id;
+        } else if (filterOptions.status === 'needs-matching') {
+          return !receipt.transaction_id && receipt.ocr_status === 'done';
+        } else if (filterOptions.status === 'pending') {
+          return receipt.ocr_status === 'pending';
+        } else if (filterOptions.status === 'failed') {
+          return receipt.ocr_status === 'failed';
+        }
+        return true;
+      });
+    }
+
     return receiptList;
-  }, [getReceiptsByStatus, activeTab, searchQuery]);
+  }, [getReceiptsByStatus, activeTab, searchQuery, filterOptions]);
 
   const getStatusBadge = (receipt: ReceiptWithTransaction) => {
     if (receipt.transaction_id) {
@@ -124,11 +186,87 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
             className="pl-10"
           />
         </div>
-        <Button variant="outline" className="transition-smooth">
-          <Filter className="h-4 w-4 mr-2" />
-          필터
-        </Button>
+        <Popover open={showFilter} onOpenChange={setShowFilter}>
+          <PopoverTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="transition-smooth"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              필터
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80" align="end">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">날짜 범위</label>
+                  <select 
+                    value={filterOptions.dateRange}
+                    onChange={(e) => setFilterOptions(prev => ({ ...prev, dateRange: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">전체</option>
+                    <option value="today">오늘</option>
+                    <option value="week">이번 주</option>
+                    <option value="month">이번 달</option>
+                    <option value="year">올해</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">파일 형식</label>
+                  <select 
+                    value={filterOptions.fileType}
+                    onChange={(e) => setFilterOptions(prev => ({ ...prev, fileType: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">전체</option>
+                    <option value="jpg">JPG</option>
+                    <option value="png">PNG</option>
+                    <option value="pdf">PDF</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">처리 상태</label>
+                  <select 
+                    value={filterOptions.status}
+                    onChange={(e) => setFilterOptions(prev => ({ ...prev, status: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="">전체</option>
+                    <option value="matched">매칭 완료</option>
+                    <option value="needs-matching">매칭 필요</option>
+                    <option value="pending">처리 중</option>
+                    <option value="failed">처리 실패</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setFilterOptions({ dateRange: '', fileType: '', status: '' });
+                    setShowFilter(false);
+                  }}
+                >
+                  초기화
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => setShowFilter(false)}
+                >
+                  적용
+                </Button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
+
 
       {/* Status Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
