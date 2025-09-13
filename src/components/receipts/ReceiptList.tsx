@@ -151,19 +151,19 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">
-          <div className="grid gap-4">
+          <div className="space-y-4 max-h-[600px] overflow-y-auto">
             {filteredReceipts.map((receipt) => (
               <Card
                 key={receipt.id}
                 className="shadow-card border-border cursor-pointer transition-smooth hover:shadow-lg"
                 onClick={() => onReceiptSelect?.(receipt)}
               >
-                <CardContent className="p-0">
-                  <div className="flex items-start gap-4 p-0">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-4">
                     {/* Thumbnail */}
                     <div className="flex-shrink-0">
                       {receipt.file_url ? (
-                        <div className="w-32 h-32 rounded-lg overflow-hidden bg-muted">
+                        <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted">
                           <img
                             src={receipt.file_url}
                             alt={receipt.original_filename || '영수증'}
@@ -172,20 +172,20 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
                           />
                         </div>
                       ) : (
-                        <div className="w-32 h-32 rounded-lg bg-muted flex items-center justify-center">
-                          <FileImage className="h-8 w-8 text-muted-foreground" />
+                        <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center">
+                          <FileImage className="h-6 w-6 text-muted-foreground" />
                         </div>
                       )}
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0 p-4">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-foreground truncate">
+                          <h4 className="font-medium text-foreground truncate text-sm">
                             {receipt.original_filename || '영수증'}
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {format(new Date(receipt.uploaded_at), 'PPp', { locale: ko })}
                           </p>
                         </div>
@@ -194,29 +194,30 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
                           <Button
                             size="sm"
                             variant="ghost"
+                            className="h-6 w-6 p-0"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteReceipt(receipt.id);
                             }}
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
 
                       {/* Transaction Info */}
                       {receipt.transaction && (
-                        <div className="bg-success/5 rounded-md p-3 mb-2">
+                        <div className="bg-success/5 rounded-md p-2 mb-2">
                           <div className="flex items-center gap-2 mb-1">
-                            <CheckCircle className="h-4 w-4 text-success" />
-                            <span className="text-sm font-medium text-success">
+                            <CheckCircle className="h-3 w-3 text-success" />
+                            <span className="text-xs font-medium text-success">
                               연결된 거래
                             </span>
                           </div>
-                          <p className="text-sm text-foreground">
+                          <p className="text-xs text-foreground line-clamp-1">
                             {receipt.transaction.description || '거래 설명 없음'}
                           </p>
-                          <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                             <span>
                               {format(new Date(receipt.transaction.date), 'PP', { locale: ko })}
                             </span>
@@ -229,7 +230,7 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
 
                       {/* OCR Info */}
                       {receipt.ocr_text && (
-                        <div className="text-sm text-muted-foreground line-clamp-2">
+                        <div className="text-xs text-muted-foreground line-clamp-2">
                           {receipt.ocr_text}
                         </div>
                       )}
@@ -252,12 +253,13 @@ export const ReceiptList: React.FC<ReceiptListProps> = ({ onReceiptSelect }) => 
                       <Button
                         size="sm"
                         variant="outline"
+                        className="h-8 px-3 text-xs"
                         onClick={(e) => {
                           e.stopPropagation();
                           onReceiptSelect?.(receipt);
                         }}
                       >
-                        <Eye className="h-4 w-4 mr-1" />
+                        <Eye className="h-3 w-3 mr-1" />
                         보기
                       </Button>
                     </div>

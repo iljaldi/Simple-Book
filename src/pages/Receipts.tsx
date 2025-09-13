@@ -143,10 +143,7 @@ const Receipts: React.FC = () => {
           <div>
             <Card className="border border-gray-200">
               <CardHeader>
-                <CardTitle className="text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Upload className="h-4 w-4 text-blue-600" />
-                  </div>
+                <CardTitle className="text-gray-900">
                   영수증 업로드
                 </CardTitle>
               </CardHeader>
@@ -154,7 +151,6 @@ const Receipts: React.FC = () => {
                 <ReceiptUpload />
               </CardContent>
             </Card>
-
 
             {/* Tips */}
             <Card className="border border-gray-200 mt-6">
@@ -193,10 +189,7 @@ const Receipts: React.FC = () => {
           <div>
             <Card className="border border-gray-200">
               <CardHeader>
-                <CardTitle className="text-gray-900 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                    <FileImage className="h-4 w-4 text-gray-600" />
-                  </div>
+                <CardTitle className="text-gray-900">
                   영수증 목록
                 </CardTitle>
               </CardHeader>

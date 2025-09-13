@@ -273,8 +273,7 @@ export const ReceiptUpload: React.FC = () => {
       {/* Upload Area */}
       <Card className="shadow-card border-border">
         <CardHeader>
-          <CardTitle className="text-foreground flex items-center gap-2">
-            <FileImage className="h-5 w-5" />
+          <CardTitle className="text-foreground">
             영수증 업로드
           </CardTitle>
         </CardHeader>
