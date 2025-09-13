@@ -207,7 +207,9 @@ export const SimpleExpenseForm: React.FC<SimpleExpenseFormProps> = ({
         onSuccess();
       } else {
         // 새 거래 생성 모드
-        await createTransactionAsync(transactionData);
+        console.log('Calling createTransactionAsync...');
+        const result = await createTransactionAsync(transactionData);
+        console.log('createTransactionAsync result:', result);
         
         if (saveType === 'continue') {
           toast.success('지출이 저장되었습니다. 새 거래를 입력하세요.');

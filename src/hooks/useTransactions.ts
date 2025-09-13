@@ -142,6 +142,29 @@ export const useTransactions = () => {
     },
   });
 
+  const createTransactionAsync = async (transaction: Omit<TransactionInsert, 'user_id'>) => {
+    const result = await createTransaction.mutateAsync(transaction);
+    // 수동으로 쿼리 무효화 및 즉시 리페치
+    await queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
+    await queryClient.refetchQueries({ queryKey: ['transactions', user?.id] });
+    console.log('Queries invalidated and refetched');
+    return result;
+  };
+
+  const updateTransactionAsync = async ({ id, updates }: { id: string; updates: TransactionUpdate }) => {
+    const result = await updateTransaction.mutateAsync({ id, updates });
+    // 수동으로 쿼리 무효화
+    queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
+    return result;
+  };
+
+  const deleteTransactionAsync = async (id: string) => {
+    const result = await deleteTransaction.mutateAsync(id);
+    // 수동으로 쿼리 무효화
+    queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
+    return result;
+  };
+
   return {
     transactions: transactionsQuery.data || [],
     isLoading: transactionsQuery.isLoading,
@@ -152,8 +175,8 @@ export const useTransactions = () => {
     isCreating: createTransaction.isPending,
     isUpdating: updateTransaction.isPending,
     isDeleting: deleteTransaction.isPending,
-    createTransactionAsync: createTransaction.mutateAsync,
-    updateTransactionAsync: updateTransaction.mutateAsync,
-    deleteTransactionAsync: deleteTransaction.mutateAsync,
+    createTransactionAsync,
+    updateTransactionAsync,
+    deleteTransactionAsync,
   };
 };
