@@ -212,7 +212,6 @@ export const SimpleExpenseForm: React.FC<SimpleExpenseFormProps> = ({
         console.log('createTransactionAsync result:', result);
         
         if (saveType === 'continue') {
-          toast.success('지출이 저장되었습니다. 새 거래를 입력하세요.');
           form.reset({
             date: new Date(),
             counterparty_name: '',
@@ -230,7 +229,6 @@ export const SimpleExpenseForm: React.FC<SimpleExpenseFormProps> = ({
           });
           onContinueAdding?.();
         } else {
-          toast.success('지출이 성공적으로 저장되었습니다.');
           onSuccess();
         }
       }

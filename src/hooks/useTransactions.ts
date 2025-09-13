@@ -46,8 +46,8 @@ export const useTransactions = () => {
       })) as (Transaction & { receipts: any[] })[];
     },
     enabled: !!user?.id,
-    refetchOnWindowFocus: false, // 윈도우 포커스 시 리페치 비활성화
-    staleTime: 2 * 60 * 1000, // 2분간 데이터를 신선하게 유지
+    refetchOnWindowFocus: true, // 윈도우 포커스 시 리페치 활성화
+    staleTime: 0, // 데이터를 즉시 새로고침
   });
 
   const createTransaction = useMutation({
@@ -71,7 +71,7 @@ export const useTransactions = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
+      // createTransactionAsync에서 처리하므로 여기서는 토스트만 표시
       toast({
         title: '거래가 등록되었습니다',
         description: '새로운 거래 내역이 성공적으로 추가되었습니다.',
@@ -143,12 +143,55 @@ export const useTransactions = () => {
   });
 
   const createTransactionAsync = async (transaction: Omit<TransactionInsert, 'user_id'>) => {
-    const result = await createTransaction.mutateAsync(transaction);
-    // 수동으로 쿼리 무효화 및 즉시 리페치
-    await queryClient.invalidateQueries({ queryKey: ['transactions', user?.id] });
-    await queryClient.refetchQueries({ queryKey: ['transactions', user?.id] });
-    console.log('Queries invalidated and refetched');
-    return result;
+    if (!user?.id) throw new Error('User not authenticated');
+
+    console.log('🚀 Creating transaction directly with Supabase...');
+    console.log('📝 Transaction data:', { ...transaction, user_id: user.id });
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([{ ...transaction, user_id: user.id }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ Supabase error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Transaction created successfully:', data);
+    
+    // 즉시 현재 캐시된 데이터 확인
+    const currentData = queryClient.getQueryData(['transactions', user.id]);
+    console.log('📊 Current cached data before update:', currentData);
+    
+    // 캐시에 직접 새 거래 추가 (즉시 UI 업데이트)
+    queryClient.setQueryData(['transactions', user.id], (oldData: any) => {
+      if (!oldData) return [data];
+      console.log('🔄 Updating cache with new transaction');
+      return [data, ...oldData];
+    });
+    
+    console.log('📊 Cache updated directly');
+    
+    // 백그라운드에서 쿼리 무효화 및 리페치 (데이터 동기화)
+    setTimeout(async () => {
+      await queryClient.invalidateQueries({ 
+        queryKey: ['transactions', user.id] 
+      });
+      await queryClient.refetchQueries({ 
+        queryKey: ['transactions', user.id] 
+      });
+      console.log('🔄 Background sync completed');
+    }, 100);
+    
+    // 성공 토스트 표시
+    toast({
+      title: '거래가 등록되었습니다',
+      description: '새로운 거래 내역이 성공적으로 추가되었습니다.',
+    });
+    
+    return data;
   };
 
   const updateTransactionAsync = async ({ id, updates }: { id: string; updates: TransactionUpdate }) => {
@@ -165,8 +208,18 @@ export const useTransactions = () => {
     return result;
   };
 
+  // 디버깅: 반환되는 데이터 로그
+  const transactionsData = transactionsQuery.data || [];
+  console.log('📤 useTransactions returning data:', {
+    transactions: transactionsData,
+    length: transactionsData.length,
+    isLoading: transactionsQuery.isLoading,
+    isError: transactionsQuery.isError,
+    queryStatus: transactionsQuery.status
+  });
+
   return {
-    transactions: transactionsQuery.data || [],
+    transactions: transactionsData,
     isLoading: transactionsQuery.isLoading,
     isError: transactionsQuery.isError,
     createTransaction: createTransaction.mutate,

@@ -23,26 +23,7 @@ const Transactions: React.FC = () => {
   const { user } = useAuth();
   useInitialSetup(); // Initialize default categories
 
-  // 컴포넌트 마운트 시 더미 데이터 자동 생성 (기존 데이터 삭제 후 새로 생성)
-  useEffect(() => {
-    const generateData = async () => {
-      if (user?.id) {
-        console.log('Transactions 컴포넌트에서 더미 데이터 생성 시도 - 사용자 ID:', user.id);
-        try {
-          await generateDummyTransactions(user.id);
-          console.log('Transactions 컴포넌트에서 더미 데이터 생성 완료');
-          // 데이터 생성 후 React Query 캐시 무효화하여 UI 업데이트
-          queryClient.invalidateQueries({ queryKey: ['transactions'] });
-        } catch (error) {
-          console.error('Transactions 컴포넌트에서 더미 데이터 생성 실패:', error);
-        }
-      } else {
-        console.log('사용자 ID가 없어서 더미 데이터를 생성하지 않습니다.');
-      }
-    };
-
-    generateData();
-  }, [user?.id, queryClient]);
+  // 더미 데이터 생성 제거 - 실제 데이터만 사용
 
   const handleSearchChange = (search: string) => {
     setSearchQuery(search);

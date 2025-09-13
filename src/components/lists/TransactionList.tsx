@@ -41,6 +41,11 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const [displayCount, setDisplayCount] = useState(10);
   const navigate = useNavigate();
 
+  // 디버깅: 거래 데이터 로그
+  console.log('🔍 TransactionList - transactions:', transactions);
+  console.log('🔍 TransactionList - isLoading:', isLoading);
+  console.log('🔍 TransactionList - transactions length:', transactions?.length || 0);
+
   // Prepare filtered list consistently across renders
   const baseTransactions = transactions ?? [];
 
