@@ -18,6 +18,8 @@ export const useTransactions = () => {
     queryFn: async () => {
       if (!user?.id) return [];
       
+      console.log('Fetching transactions for user:', user.id);
+      
       const { data, error } = await supabase
         .from('transactions')
         .select(`
@@ -32,7 +34,12 @@ export const useTransactions = () => {
         .eq('user_id', user.id)
         .order('date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching transactions:', error);
+        throw error;
+      }
+      
+      console.log('Fetched transactions:', data);
       return data.map(transaction => ({
         ...transaction,
         receipts: transaction.receipts || []
@@ -47,13 +54,20 @@ export const useTransactions = () => {
     mutationFn: async (transaction: Omit<TransactionInsert, 'user_id'>) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      console.log('Creating transaction with data:', { ...transaction, user_id: user.id });
+
       const { data, error } = await supabase
         .from('transactions')
         .insert([{ ...transaction, user_id: user.id }])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Transaction created successfully:', data);
       return data;
     },
     onSuccess: () => {

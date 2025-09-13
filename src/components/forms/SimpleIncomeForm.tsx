@@ -168,6 +168,8 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
 
   const onSubmit = async (data: SimpleIncomeFormData) => {
     try {
+      console.log('Form submitted with data:', data);
+      
       const transactionData = {
         type: 'income' as const,
         date: format(data.date, 'yyyy-MM-dd'),
@@ -185,6 +187,8 @@ export const SimpleIncomeForm: React.FC<SimpleIncomeFormProps> = ({
         status: 'confirmed' as 'draft' | 'confirmed',
         currency: 'KRW',
       };
+      
+      console.log('Prepared transaction data:', transactionData);
 
       if (initialData?.id) {
         // 수정 모드
