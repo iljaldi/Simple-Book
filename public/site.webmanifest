@@ -1,0 +1,21 @@
+{
+  "name": "Simple Book - 간편장부",
+  "short_name": "Simple Book",
+  "description": "독립한 디자이너를 위한 간편장부 서비스",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/"
+}
