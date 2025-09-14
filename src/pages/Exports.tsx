@@ -2,14 +2,25 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, FileText, FileSpreadsheet, Calendar, CheckCircle, Trash2, Eye } from 'lucide-react';
+import { Modal } from '@/components/design-system/Modal';
+import { Download, FileText, FileSpreadsheet, Calendar, CheckCircle, Trash2, Eye, X } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+
+// jsPDF 타입 확장
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 const Exports: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
   const [selectedFormat, setSelectedFormat] = useState('excel');
-
-  // 더미 데이터
-  const generatedPackages = [
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [viewingPackage, setViewingPackage] = useState<any>(null);
+  const [generatedPackages, setGeneratedPackages] = useState([
     {
       id: 1,
       name: '2024년 부가가치세 신고서',
@@ -50,7 +61,222 @@ const Exports: React.FC = () => {
       status: 'completed',
       description: '2024년 2분기 부가가치세 신고서 (PDF)'
     }
-  ];
+  ]);
+
+  const handleGeneratePackage = async () => {
+    setIsGenerating(true);
+    
+    try {
+      // 실제 구현에서는 API 호출을 통해 패키지 생성
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 2초 대기 (시뮬레이션)
+      
+      // 새 패키지 생성
+      const newPackage = {
+        id: Date.now(),
+        name: `${selectedYear}년 ${selectedFormat === 'excel' ? '부가가치세' : '소득세'} 신고서`,
+        year: selectedYear,
+        format: selectedFormat,
+        size: selectedFormat === 'excel' ? '2.3 MB' : '1.8 MB',
+        createdAt: new Date().toISOString().split('T')[0],
+        status: 'completed',
+        description: `${selectedYear}년 ${selectedFormat === 'excel' ? '부가가치세' : '소득세'} 신고서 (${selectedFormat.toUpperCase()})`
+      };
+      
+      setGeneratedPackages(prev => [newPackage, ...prev]);
+      
+      // 성공 알림
+      alert(`${selectedYear}년 ${selectedFormat.toUpperCase()} 형식의 신고 패키지가 생성되었습니다!`);
+      
+    } catch (error) {
+      console.error('패키지 생성 중 오류가 발생했습니다:', error);
+      alert('패키지 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleDownloadPackage = (pkg: any) => {
+    const fileName = `${pkg.name}.${pkg.format}`;
+    
+    if (pkg.format === 'excel') {
+      // Excel 파일 생성 (실제 .xlsx 파일)
+      generateExcelContent(pkg, fileName);
+    } else if (pkg.format === 'pdf') {
+      // PDF 파일 생성
+      generatePDFContent(pkg, fileName);
+    }
+  };
+
+  const generateExcelContent = (pkg: any, fileName: string) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    
+    // 워크북 생성
+    const wb = XLSX.utils.book_new();
+    
+    // 기본 정보 시트
+    const basicInfo = [
+      ['Report Name', pkg.name],
+      ['Report Year', pkg.year],
+      ['Created Date', currentDate],
+      ['File Format', pkg.format.toUpperCase()],
+      [''],
+      ['Financial Summary'],
+      ['Item', 'Amount', 'Description'],
+      ['Income', 2500000, `Total income for ${pkg.year}`],
+      ['Expenses', 1800000, `Total expenses for ${pkg.year}`],
+      ['Net Profit', 700000, 'Income minus expenses'],
+      ['VAT', 70000, '10% of net profit'],
+      ['Income Tax', 140000, '20% of net profit']
+    ];
+    
+    const basicInfoSheet = XLSX.utils.aoa_to_sheet(basicInfo);
+    XLSX.utils.book_append_sheet(wb, basicInfoSheet, 'Basic Info');
+    
+    // 거래 내역 시트
+    const transactions = [
+      ['Transaction Type', 'Amount', 'Date', 'Category'],
+      ['Sales', 500000, currentDate, 'Income'],
+      ['Salary', 300000, currentDate, 'Income'],
+      ['Office Supplies', 50000, currentDate, 'Expense'],
+      ['Communication', 30000, currentDate, 'Expense'],
+      ['Transportation', 20000, currentDate, 'Expense']
+    ];
+    
+    const transactionSheet = XLSX.utils.aoa_to_sheet(transactions);
+    XLSX.utils.book_append_sheet(wb, transactionSheet, 'Transactions');
+    
+    // Excel 파일 다운로드
+    XLSX.writeFile(wb, fileName.replace('.excel', '.xlsx'));
+  };
+
+  const generateCSVContent = (pkg: any) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    
+    // BOM (Byte Order Mark) 추가하여 UTF-8 인코딩 명시
+    const BOM = '\uFEFF';
+    
+    const csvContent = `${BOM}Report Name,${pkg.name}
+Report Year,${pkg.year}
+Created Date,${currentDate}
+File Format,${pkg.format.toUpperCase()}
+
+Item,Amount,Description
+Income,2500000,Total income for ${pkg.year}
+Expenses,1800000,Total expenses for ${pkg.year}
+Net Profit,700000,Income minus expenses
+VAT,70000,10% of net profit
+Income Tax,140000,20% of net profit
+
+Transaction Type,Amount,Date,Category
+Sales,500000,${currentDate},Income
+Salary,300000,${currentDate},Income
+Office Supplies,50000,${currentDate},Expense
+Communication,30000,${currentDate},Expense
+Transportation,20000,${currentDate},Expense`;
+    
+    return csvContent;
+  };
+
+  const generatePDFContent = (pkg: any, fileName: string) => {
+    try {
+      // jsPDF를 사용한 PDF 생성
+      const pdf = new jsPDF();
+      const currentDate = new Date().toISOString().split('T')[0];
+      
+      // 제목
+      pdf.setFontSize(20);
+      pdf.text(pkg.name, 20, 30);
+      
+      // 기본 정보
+      pdf.setFontSize(12);
+      pdf.text(`Report Year: ${pkg.year}`, 20, 50);
+      pdf.text(`Created Date: ${currentDate}`, 20, 60);
+      pdf.text(`File Format: ${pkg.format.toUpperCase()}`, 20, 70);
+      
+      // 구분선
+      pdf.line(20, 80, 190, 80);
+      
+      // 재무 정보
+      pdf.setFontSize(14);
+      pdf.text('Financial Summary', 20, 95);
+      
+      pdf.setFontSize(10);
+      pdf.text('Income: 2,500,000 KRW', 20, 110);
+      pdf.text('Expenses: 1,800,000 KRW', 20, 120);
+      pdf.text('Net Profit: 700,000 KRW', 20, 130);
+      
+      // 세금 정보
+      pdf.setFontSize(14);
+      pdf.text('Tax Calculation', 20, 150);
+      
+      pdf.setFontSize(10);
+      pdf.text('VAT: 70,000 KRW (10% of Net Profit)', 20, 165);
+      pdf.text('Income Tax: 140,000 KRW (20% of Net Profit)', 20, 175);
+      
+      // 거래 내역
+      pdf.setFontSize(14);
+      pdf.text('Transaction Details', 20, 195);
+      
+      pdf.setFontSize(10);
+      pdf.text('Sales: 500,000 KRW', 20, 210);
+      pdf.text('Salary: 300,000 KRW', 20, 220);
+      pdf.text('Office Supplies: 50,000 KRW', 20, 230);
+      pdf.text('Communication: 30,000 KRW', 20, 240);
+      pdf.text('Transportation: 20,000 KRW', 20, 250);
+      
+      // PDF 다운로드
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('PDF 생성 중 오류:', error);
+      // 대안: 간단한 텍스트 파일로 다운로드
+      const textContent = `
+${pkg.name}
+Report Year: ${pkg.year}
+Created Date: ${new Date().toISOString().split('T')[0]}
+File Format: ${pkg.format.toUpperCase()}
+
+Financial Summary:
+- Income: 2,500,000 KRW
+- Expenses: 1,800,000 KRW
+- Net Profit: 700,000 KRW
+
+Tax Calculation:
+- VAT: 70,000 KRW (10% of Net Profit)
+- Income Tax: 140,000 KRW (20% of Net Profit)
+
+Transaction Details:
+- Sales: 500,000 KRW
+- Salary: 300,000 KRW
+- Office Supplies: 50,000 KRW
+- Communication: 30,000 KRW
+- Transportation: 20,000 KRW
+      `;
+      
+      const blob = new Blob([textContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName.replace('.pdf', '.txt');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleDeletePackage = (packageId: number) => {
+    if (confirm('이 패키지를 삭제하시겠습니까?')) {
+      setGeneratedPackages(prev => prev.filter(pkg => pkg.id !== packageId));
+    }
+  };
+
+  const handleViewPackage = (pkg: any) => {
+    setViewingPackage(pkg);
+  };
+
+  const closeViewModal = () => {
+    setViewingPackage(null);
+  };
 
   const checklistItems = [
     { id: 1, text: '모든 거래 입력 완료', completed: true },
@@ -89,17 +315,18 @@ const Exports: React.FC = () => {
               <div className="flex gap-2">
                 <Badge 
                   variant={selectedYear === '2024' ? "default" : "outline"} 
-                  className="cursor-pointer"
+                  className="cursor-pointer h-12 px-4 py-3 text-sm"
                   onClick={() => setSelectedYear('2024')}
                 >
-                  <Calendar className="h-3 w-3 mr-1" />
+                  <Calendar className="h-4 w-4 mr-2" />
                   2024년
                 </Badge>
                 <Badge 
                   variant={selectedYear === '2023' ? "default" : "outline"} 
-                  className="cursor-pointer"
+                  className="cursor-pointer h-12 px-4 py-3 text-sm"
                   onClick={() => setSelectedYear('2023')}
                 >
+                  <Calendar className="h-4 w-4 mr-2" />
                   2023년
                 </Badge>
               </div>
@@ -110,26 +337,30 @@ const Exports: React.FC = () => {
               <div className="flex gap-2">
                 <Badge 
                   variant={selectedFormat === 'excel' ? "default" : "outline"} 
-                  className="cursor-pointer"
+                  className="cursor-pointer h-12 px-4 py-3 text-sm"
                   onClick={() => setSelectedFormat('excel')}
                 >
-                  <FileSpreadsheet className="h-3 w-3 mr-1" />
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
                   Excel
                 </Badge>
                 <Badge 
                   variant={selectedFormat === 'pdf' ? "default" : "outline"} 
-                  className="cursor-pointer"
+                  className="cursor-pointer h-12 px-4 py-3 text-sm"
                   onClick={() => setSelectedFormat('pdf')}
                 >
-                  <FileText className="h-3 w-3 mr-1" />
+                  <FileText className="h-4 w-4 mr-2" />
                   PDF
                 </Badge>
               </div>
             </div>
 
-            <Button className="w-full transition-smooth bg-black hover:bg-gray-800 text-white">
-              <Download className="h-4 w-4 mr-2" />
-              신고 패키지 생성
+            <Button 
+              className="w-full h-14 transition-smooth bg-black hover:bg-gray-800 text-white text-base font-medium"
+              onClick={handleGeneratePackage}
+              disabled={isGenerating}
+            >
+              <Download className="h-5 w-5 mr-2" />
+              {isGenerating ? '생성 중...' : '신고 패키지 생성'}
             </Button>
             
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -171,15 +402,28 @@ const Exports: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleViewPackage(pkg)}
+                      >
                         <Eye className="h-4 w-4 mr-1" />
                         보기
                       </Button>
-                      <Button size="sm" className="bg-black hover:bg-gray-800 text-white">
+                      <Button 
+                        size="sm" 
+                        className="bg-black hover:bg-gray-800 text-white"
+                        onClick={() => handleDownloadPackage(pkg)}
+                      >
                         <Download className="h-4 w-4 mr-1" />
                         다운로드
                       </Button>
-                      <Button size="sm" variant="ghost" className="text-red-600 hover:text-red-700">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => handleDeletePackage(pkg.id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -261,6 +505,141 @@ const Exports: React.FC = () => {
         </Card>
       </div>
       </div>
+
+      {/* 패키지 미리보기 모달 */}
+      {viewingPackage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={closeViewModal}
+          />
+          
+          {/* Modal */}
+          <div
+            className="relative bg-white rounded-lg border border-gray-200 shadow-xl w-full mx-4 max-w-4xl max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                {viewingPackage.format === 'excel' ? (
+                  <FileSpreadsheet className="h-8 w-8 text-green-600" />
+                ) : (
+                  <FileText className="h-8 w-8 text-red-600" />
+                )}
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{viewingPackage.name}</h2>
+                  <p className="text-gray-600">{viewingPackage.description}</p>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={closeViewModal}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">패키지 정보</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">파일 형식:</span>
+                      <Badge variant="secondary">{viewingPackage.format.toUpperCase()}</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">신고 연도:</span>
+                      <span className="font-medium">{viewingPackage.year}년</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">파일 크기:</span>
+                      <span className="font-medium">{viewingPackage.size}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">생성일:</span>
+                      <span className="font-medium">{viewingPackage.createdAt}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">상태:</span>
+                      <Badge variant="default" className="bg-green-600">완료</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">포함 내용</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm">신고서 양식</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm">거래 내역 데이터</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm">세금 계산서</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm">영수증 첨부파일</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="text-sm">신고 가이드</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-gray-900 mb-2">미리보기</h3>
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="text-center py-8">
+                    {viewingPackage.format === 'excel' ? (
+                      <div className="space-y-2">
+                        <FileSpreadsheet className="h-16 w-16 text-green-600 mx-auto" />
+                        <p className="text-gray-600">Excel 파일 미리보기</p>
+                        <p className="text-sm text-gray-500">스프레드시트 형태의 신고서 데이터</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <FileText className="h-16 w-16 text-red-600 mx-auto" />
+                        <p className="text-gray-600">PDF 파일 미리보기</p>
+                        <p className="text-sm text-gray-500">인쇄 가능한 신고서 문서</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={closeViewModal}>
+                  닫기
+                </Button>
+                <Button 
+                  className="bg-black hover:bg-gray-800 text-white"
+                  onClick={() => {
+                    handleDownloadPackage(viewingPackage);
+                    closeViewModal();
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  다운로드
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
