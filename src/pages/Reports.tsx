@@ -1,20 +1,96 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart3, TrendingUp, Calendar, Download, PieChart, LineChart, DollarSign } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const Reports: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('this-month');
+  const [customYear, setCustomYear] = useState('2025');
+  const [customMonth, setCustomMonth] = useState('1');
+  const [showCustomSelector, setShowCustomSelector] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const periods = [
     { value: 'this-month', label: '이번 달' },
     { value: 'last-month', label: '지난 달' },
     { value: 'this-year', label: '올해' },
     { value: 'last-year', label: '작년' },
-    { value: 'custom', label: '기간 선택' },
+    { value: 'custom', label: '사용자 지정' },
   ];
+
+  const years = Array.from({ length: 10 }, (_, i) => 2025 - i);
+  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+  const handlePeriodChange = (value: string) => {
+    if (value === 'custom') {
+      setShowCustomSelector(true);
+      setSelectedPeriod('custom');
+    } else {
+      setShowCustomSelector(false);
+      setSelectedPeriod(value);
+    }
+  };
+
+  const handleCustomApply = () => {
+    setSelectedPeriod('custom');
+  };
+
+  const handleDownloadReport = async () => {
+    if (!reportRef.current) return;
+    
+    setIsDownloading(true);
+    
+    try {
+      // 리포트 영역을 캡처
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      
+      // PDF 생성
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      
+      let position = 0;
+      
+      // 첫 페이지 추가
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      // 추가 페이지가 필요한 경우
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      // 파일명 생성
+      const periodLabel = periods.find(p => p.value === selectedPeriod)?.label || '기간';
+      const fileName = `재무리포트_${periodLabel}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // PDF 다운로드
+      pdf.save(fileName);
+      
+    } catch (error) {
+      console.error('리포트 다운로드 중 오류가 발생했습니다:', error);
+      alert('리포트 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   // 더미 데이터
   const dummyData = {
@@ -120,14 +196,39 @@ const Reports: React.FC = () => {
         return dummyData.thisYear;
       case 'last-year':
         return dummyData.lastYear;
+      case 'custom':
+        // 사용자 지정 기간에 따른 더미 데이터 생성
+        const selectedYear = parseInt(customYear);
+        const selectedMonth = parseInt(customMonth);
+        const currentYear = new Date().getFullYear();
+        const currentMonth = new Date().getMonth() + 1;
+        
+        // 현재 연월과 비교하여 데이터 조정
+        const yearDiff = selectedYear - currentYear;
+        const monthDiff = selectedMonth - currentMonth;
+        
+        // 기본 데이터에 변동 적용
+        const baseData = dummyData.thisMonth;
+        const incomeMultiplier = 1 + (yearDiff * 0.1) + (monthDiff * 0.05);
+        const expenseMultiplier = 1 + (yearDiff * 0.08) + (monthDiff * 0.03);
+        
+        return {
+          totalIncome: Math.round(baseData.totalIncome * incomeMultiplier),
+          totalExpense: Math.round(baseData.totalExpense * expenseMultiplier),
+          netProfit: Math.round(baseData.totalIncome * incomeMultiplier - baseData.totalExpense * expenseMultiplier),
+          transactionCount: Math.round(baseData.transactionCount * (1 + yearDiff * 0.05)),
+          incomeChange: baseData.incomeChange + (yearDiff * 2),
+          expenseChange: baseData.expenseChange + (yearDiff * 1),
+          netProfitChange: baseData.netProfitChange + (yearDiff * 3)
+        };
       default:
         return dummyData.thisMonth;
     }
-  }, [selectedPeriod]);
+  }, [selectedPeriod, customYear, customMonth]);
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
+      <div ref={reportRef} className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div>
@@ -135,9 +236,14 @@ const Reports: React.FC = () => {
             <p className="text-gray-600">수입과 지출을 분석하고 인사이트를 확인하세요</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="backdrop-glass border-primary/20 hover:border-primary/40 text-foreground hover:text-primary transition-smooth">
+            <Button 
+              variant="outline" 
+              className="backdrop-glass border-primary/20 hover:border-primary/40 text-foreground hover:text-primary transition-smooth"
+              onClick={handleDownloadReport}
+              disabled={isDownloading}
+            >
               <Download className="h-4 w-4 mr-2" />
-              리포트 다운로드
+              {isDownloading ? '다운로드 중...' : '리포트 다운로드'}
             </Button>
           </div>
         </div>
@@ -149,12 +255,12 @@ const Reports: React.FC = () => {
               <Badge 
                 key={period.value}
                 variant={selectedPeriod === period.value ? "default" : "secondary"}
-                className={`cursor-pointer transition-smooth ${
+                className={`cursor-pointer transition-smooth h-10 px-3 py-2 ${
                   selectedPeriod === period.value 
                     ? 'bg-primary text-primary-foreground shadow-green' 
                     : 'hover:bg-accent hover:text-accent-foreground'
                 }`}
-                onClick={() => setSelectedPeriod(period.value)}
+                onClick={() => handlePeriodChange(period.value)}
               >
                 {period.label}
               </Badge>
@@ -162,8 +268,7 @@ const Reports: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <Select value={selectedPeriod} onValueChange={handlePeriodChange}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="기간 선택" />
               </SelectTrigger>
@@ -175,6 +280,47 @@ const Reports: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Custom Period Selector - Fixed Height Container */}
+          <div className="h-10 flex items-center">
+            {(showCustomSelector || selectedPeriod === 'custom') && (
+              <div className="flex items-center gap-2 h-10">
+                <Select value={customYear} onValueChange={setCustomYear}>
+                  <SelectTrigger className="w-20 h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-gray-600">년</span>
+                
+                <Select value={customMonth} onValueChange={setCustomMonth}>
+                  <SelectTrigger className="w-16 h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month} value={month.toString()}>
+                        {month}월
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Button 
+                  onClick={handleCustomApply}
+                  className="h-10 px-4"
+                >
+                  적용
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -361,7 +507,7 @@ const Reports: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   {incomeTrendData.slice(-6).map((data, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-green-50 rounded">
+                    <div key={index} className="flex items-center justify-between p-2 rounded">
                       <span className="text-sm font-medium">{data.month}</span>
                       <div className="flex items-center gap-2">
                         <div className="w-20 bg-gray-200 rounded-full h-2">
@@ -405,7 +551,7 @@ const Reports: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   {expenseTrendData.slice(-6).map((data, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-red-50 rounded">
+                    <div key={index} className="flex items-center justify-between p-2 rounded">
                       <span className="text-sm font-medium">{data.month}</span>
                       <div className="flex items-center gap-2">
                         <div className="w-20 bg-gray-200 rounded-full h-2">
