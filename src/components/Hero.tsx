@@ -48,14 +48,14 @@ const Hero = () => {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>간편장부 - 프리랜서 1인사업자 3분 장부관리 | Simple Book</title>
-        <meta name="description" content="프리랜서와 1인사업자를 위한 간편장부 서비스. 3분 만에 수입·지출 기록하고 홈택스 세금신고 자료를 자동 생성하세요. 무료로 시작하세요!" />
-        <meta name="keywords" content="간편장부, 프리랜서장부, 1인사업자장부, 세금신고, 홈택스, 장부관리, 개인사업자, 솔로프리너, 디자이너장부, 개발자장부" />
-        <meta property="og:title" content="간편장부 - 프리랜서 1인사업자 3분 장부관리 | Simple Book" />
-        <meta property="og:description" content="프리랜서와 1인사업자를 위한 간편장부 서비스. 3분 만에 수입·지출 기록하고 홈택스 세금신고 자료를 자동 생성하세요. 무료로 시작하세요!" />
+        <title>Simple Book - 독립한 디자이너를 위한 5분 간편장부 | 홈택스 세금신고 무료</title>
+        <meta name="description" content="독립한 디자이너를 위한 간편장부 서비스. 5분 만에 수입·지출 기록하고 홈택스 세금신고 자료를 자동 생성하세요. 무료로 시작하세요!" />
+        <meta name="keywords" content="간편장부, 디자이너장부, 독립디자이너, 프리랜서장부, 세금신고, 홈택스, 장부관리, 개인사업자, 솔로프리너, 디자이너세금신고" />
+        <meta property="og:title" content="Simple Book - 독립한 디자이너를 위한 5분 간편장부 | 홈택스 세금신고 무료" />
+        <meta property="og:description" content="독립한 디자이너를 위한 간편장부 서비스. 5분 만에 수입·지출 기록하고 홈택스 세금신고 자료를 자동 생성하세요. 무료로 시작하세요!" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://lovable-project-8e6a730d-p24rtr3ha-iljaldis-projects.vercel.app/images/main-hero.png" />
-        <link rel="canonical" href="https://lovable-project-8e6a730d-p24rtr3ha-iljaldis-projects.vercel.app/" />
+        <meta property="og:image" content="https://lovable-project-8e6a730d-6t033vgba-iljaldis-projects.vercel.app/images/main-hero.png" />
+        <link rel="canonical" href="https://lovable-project-8e6a730d-6t033vgba-iljaldis-projects.vercel.app/" />
       </Helmet>
       <HeroMain />
       <div 
