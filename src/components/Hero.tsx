@@ -54,7 +54,7 @@ const Hero = () => {
         <meta property="og:title" content="간편장부 - 프리랜서 1인사업자 3분 장부관리 | Simple Book" />
         <meta property="og:description" content="프리랜서와 1인사업자를 위한 간편장부 서비스. 3분 만에 수입·지출 기록하고 홈택스 세금신고 자료를 자동 생성하세요. 무료로 시작하세요!" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/images/main-hero.png" />
+        <meta property="og:image" content="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/images/og.png" />
         <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/" />
       </Helmet>
       <HeroMain />
