@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -112,6 +113,15 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>대시보드 - 간편장부 | 프리랜서 1인사업자 장부관리</title>
+        <meta name="description" content="프리랜서와 1인사업자를 위한 간편장부 대시보드. 수입·지출 현황을 한눈에 확인하고 월별 추세를 분석하세요. 무료로 시작하세요!" />
+        <meta name="keywords" content="대시보드, 장부관리, 수입지출, 프리랜서, 1인사업자, 간편장부, 월별분석, 재무관리" />
+        <meta property="og:title" content="대시보드 - 간편장부 | 프리랜서 1인사업자 장부관리" />
+        <meta property="og:description" content="프리랜서와 1인사업자를 위한 간편장부 대시보드. 수입·지출 현황을 한눈에 확인하고 월별 추세를 분석하세요." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/dashboard" />
+      </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">

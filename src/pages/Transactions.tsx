@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,15 @@ const Transactions: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>거래내역 - 간편장부 | 프리랜서 1인사업자 수입지출 관리</title>
+        <meta name="description" content="프리랜서와 1인사업자를 위한 거래내역 관리. 수입·지출을 체계적으로 기록하고 검색하세요. 영수증 첨부와 카테고리 분류 지원!" />
+        <meta name="keywords" content="거래내역, 수입지출관리, 프리랜서, 1인사업자, 간편장부, 영수증관리, 카테고리분류, 장부기록" />
+        <meta property="og:title" content="거래내역 - 간편장부 | 프리랜서 1인사업자 수입지출 관리" />
+        <meta property="og:description" content="프리랜서와 1인사업자를 위한 거래내역 관리. 수입·지출을 체계적으로 기록하고 검색하세요." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/transactions" />
+      </Helmet>
       {/* Header */}
       <div className="border-b border-border/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-4 max-w-7xl">

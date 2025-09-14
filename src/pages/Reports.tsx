@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -228,6 +229,15 @@ const Reports: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>재무리포트 - 간편장부 | 프리랜서 1인사업자 수입지출 분석</title>
+        <meta name="description" content="프리랜서와 1인사업자를 위한 재무리포트 분석. 수입·지출 동향을 분석하고 PDF로 다운로드하세요. 월별·연도별 상세 분석 제공!" />
+        <meta name="keywords" content="재무리포트, 수입지출분석, 장부리포트, 프리랜서, 1인사업자, 간편장부, 월별분석, PDF다운로드, 재무관리" />
+        <meta property="og:title" content="재무리포트 - 간편장부 | 프리랜서 1인사업자 수입지출 분석" />
+        <meta property="og:description" content="프리랜서와 1인사업자를 위한 재무리포트 분석. 수입·지출 동향을 분석하고 PDF로 다운로드하세요." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/reports" />
+      </Helmet>
       <div ref={reportRef} className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">

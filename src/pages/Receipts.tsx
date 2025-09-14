@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
@@ -38,6 +39,15 @@ const Receipts: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>영수증관리 - 간편장부 | 프리랜서 1인사업자 영수증 업로드</title>
+        <meta name="description" content="프리랜서와 1인사업자를 위한 영수증 관리. 영수증을 업로드하고 자동으로 정보를 추출하세요. 세금신고에 필요한 증빙자료를 체계적으로 관리!" />
+        <meta name="keywords" content="영수증관리, 영수증업로드, 프리랜서, 1인사업자, 간편장부, 증빙자료, 세금신고, 영수증추출" />
+        <meta property="og:title" content="영수증관리 - 간편장부 | 프리랜서 1인사업자 영수증 업로드" />
+        <meta property="og:description" content="프리랜서와 1인사업자를 위한 영수증 관리. 영수증을 업로드하고 자동으로 정보를 추출하세요." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/receipts" />
+      </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
