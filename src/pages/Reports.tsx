@@ -236,7 +236,7 @@ const Reports: React.FC = () => {
         <meta property="og:title" content="재무리포트 - 간편장부 | 프리랜서 1인사업자 수입지출 분석" />
         <meta property="og:description" content="프리랜서와 1인사업자를 위한 재무리포트 분석. 수입·지출 동향을 분석하고 PDF로 다운로드하세요." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/reports" />
+        <link rel="canonical" href="https://simplebook.site/reports" />
       </Helmet>
       <div ref={reportRef} className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         {/* Header */}

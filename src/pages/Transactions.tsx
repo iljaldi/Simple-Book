@@ -63,7 +63,7 @@ const Transactions: React.FC = () => {
         <meta property="og:title" content="거래내역 - 간편장부 | 프리랜서 1인사업자 수입지출 관리" />
         <meta property="og:description" content="프리랜서와 1인사업자를 위한 거래내역 관리. 수입·지출을 체계적으로 기록하고 검색하세요." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/transactions" />
+        <link rel="canonical" href="https://simplebook.site/transactions" />
       </Helmet>
       {/* Header */}
       <div className="border-b border-border/20">

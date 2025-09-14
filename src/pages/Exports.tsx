@@ -300,7 +300,7 @@ Transaction Details:
         <meta property="og:title" content="신고패키지 다운로드 - 간편장부 | 프리랜서 1인사업자 세금신고" />
         <meta property="og:description" content="프리랜서와 1인사업자를 위한 신고패키지 다운로드. 홈택스 세금신고용 Excel, PDF 파일을 자동 생성하고 다운로드하세요." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/exports" />
+        <link rel="canonical" href="https://simplebook.site/exports" />
       </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
       <div className="flex justify-between items-start mb-8">

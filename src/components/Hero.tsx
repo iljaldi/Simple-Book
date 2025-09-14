@@ -54,8 +54,8 @@ const Hero = () => {
         <meta property="og:title" content="Simple Book - 독립한 디자이너를 위한 5분 간편장부 | 홈택스 세금신고 무료" />
         <meta property="og:description" content="독립한 디자이너를 위한 간편장부 서비스. 5분 만에 수입·지출 기록하고 홈택스 세금신고 자료를 자동 생성하세요. 무료로 시작하세요!" />
         <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://lovable-project-8e6a730d-6t033vgba-iljaldis-projects.vercel.app/images/main-hero.png" />
-        <link rel="canonical" href="https://lovable-project-8e6a730d-6t033vgba-iljaldis-projects.vercel.app/" />
+        <meta property="og:image" content="https://simplebook.site/images/og.png" />
+        <link rel="canonical" href="https://simplebook.site/" />
       </Helmet>
       <HeroMain />
       <div 

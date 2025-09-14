@@ -120,7 +120,7 @@ const Dashboard: React.FC = () => {
         <meta property="og:title" content="대시보드 - 간편장부 | 프리랜서 1인사업자 장부관리" />
         <meta property="og:description" content="프리랜서와 1인사업자를 위한 간편장부 대시보드. 수입·지출 현황을 한눈에 확인하고 월별 추세를 분석하세요." />
         <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/dashboard" />
+        <link rel="canonical" href="https://simplebook.site/dashboard" />
       </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         {/* Header */}
