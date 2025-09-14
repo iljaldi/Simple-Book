@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://lovable-project-8e6a730d-izb25a1j8-iljaldis-projects.vercel.app/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# Allow important pages
+Allow: /dashboard
+Allow: /reports
+Allow: /transactions
+Allow: /receipts
+Allow: /exports
+Allow: /settings
