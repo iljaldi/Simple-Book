@@ -10,12 +10,18 @@ import { useToast } from '@/hooks/use-toast';
 import { FileText } from 'lucide-react';
 
 const Auth: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(true); // Start in login mode
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,22 +29,111 @@ const Auth: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
+  // 폼 초기화 함수
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setEmailError('');
+    setPasswordError('');
+    setConfirmPasswordError('');
+    setIsCheckingEmail(false);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+  };
+
   useEffect(() => {
     if (user) {
       navigate(from, { replace: true });
     }
   }, [user, navigate, from]);
 
+  // 실시간 이메일 중복 체크
+  useEffect(() => {
+    if (!isLogin && email && email.includes('@') && email.includes('.')) {
+      const checkEmailDuplicate = async () => {
+        setIsCheckingEmail(true);
+        setEmailError('');
+        
+        try {
+          // 임시 비밀번호로 회원가입 시도하여 중복 여부 확인
+          const { data: signupData, error: signupError } = await supabase.auth.signUp({
+            email,
+            password: 'TempPassword123!@#',
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth`
+            }
+          });
+
+          console.log('Email check result:', { signupData, signupError });
+
+          // 회원가입이 성공한 경우 - 새 계정이므로 중복 아님
+          if (signupData && signupData.user && !signupError) {
+            console.log('새 계정 생성 성공 - 중복 아님');
+            setEmailError(''); // 중복 아님
+            return;
+          }
+
+          // Supabase에서 반환하는 중복 이메일 오류 처리
+          if (signupError && (
+            signupError.message === 'User already registered' ||
+            signupError.message.includes('already registered') ||
+            signupError.message.includes('already exists') ||
+            signupError.message.includes('duplicate') ||
+            signupError.message.includes('email address is already in use') ||
+            signupError.message.includes('Email already registered') ||
+            signupError.message.includes('email already registered') ||
+            signupError.message.includes('User already exists') ||
+            signupError.message.includes('Email already exists') ||
+            signupError.message.includes('이미 등록된') ||
+            signupError.message.includes('이미 존재하는') ||
+            signupError.status === 400 ||
+            signupError.status === 409
+          )) {
+            setEmailError('이미 사용되고 있는 계정입니다');
+            return;
+          }
+
+          // 비밀번호 강도 오류는 이메일 중복이 아님
+          if (signupError && signupError.message.includes('Password should contain')) {
+            setEmailError(''); // 비밀번호 강도 오류는 무시
+            return;
+          }
+
+          // 계정이 존재하지 않음
+          setEmailError('');
+        } catch (error) {
+          console.error('Email check error:', error);
+          setEmailError('');
+        } finally {
+          setIsCheckingEmail(false);
+        }
+      };
+
+      // 디바운싱 (500ms 후에 체크)
+      const timeoutId = setTimeout(checkEmailDuplicate, 500);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setEmailError('');
+    }
+  }, [email, isLogin, password]);
+
+
   const handleSignUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
+
+    console.log('Attempting signup for email:', email);
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl
       }
     });
+
+    console.log('Signup response:', { data, error });
+
     return { error };
   };
 
@@ -107,23 +202,20 @@ const Auth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('=== Form Submit Debug ===');
+    console.log('isLogin:', isLogin);
+    console.log('email:', email);
+    console.log('password:', password);
+    
     // 회원가입 시 비밀번호 확인
     if (!isLogin && password !== confirmPassword) {
-      toast({
-        title: "비밀번호가 일치하지 않습니다",
-        description: "비밀번호를 다시 확인해주세요.",
-        variant: "destructive",
-      });
+      setConfirmPasswordError('비밀번호가 일치하지 않습니다');
       return;
     }
 
     // 비밀번호 강도 검사
     if (!isLogin && password.length < 6) {
-      toast({
-        title: "비밀번호는 6자 이상이어야 합니다",
-        description: "더 안전한 비밀번호를 설정해주세요.",
-        variant: "destructive",
-      });
+      setPasswordError('비밀번호는 6자 이상이어야 합니다');
       return;
     }
 
@@ -135,24 +227,18 @@ const Auth: React.FC = () => {
         : await handleSignUp(email, password);
 
       if (error) {
-        if (error.message === 'User already registered') {
-          toast({
-            title: "이미 가입된 사용자입니다",
-            description: "로그인을 시도해보세요.",
-            variant: "destructive",
-          });
-        } else if (error.message === 'Invalid login credentials') {
-          toast({
-            title: "로그인 정보가 올바르지 않습니다",
-            description: "이메일과 비밀번호를 확인해주세요.",
-            variant: "destructive",
-          });
+        console.log('Auth error:', error);
+        console.log('Error message:', error.message);
+        console.log('Error status:', error.status);
+        
+        if (isLogin) {
+          if (error.message === 'Invalid login credentials') {
+            setPasswordError('계정이 존재하지 않습니다. 회원가입 후 사용해주세요');
+          } else {
+            setPasswordError(error.message);
+          }
         } else {
-          toast({
-            title: isLogin ? "로그인 실패" : "회원가입 실패",
-            description: error.message,
-            variant: "destructive",
-          });
+          setPasswordError(error.message);
         }
       } else if (!isLogin) {
         toast({
@@ -161,11 +247,12 @@ const Auth: React.FC = () => {
         });
       }
     } catch (error) {
-      toast({
-        title: "오류가 발생했습니다",
-        description: "잠시 후 다시 시도해주세요.",
-        variant: "destructive",
-      });
+      console.error('Auth error:', error);
+      if (isLogin) {
+        setPasswordError('계정이 존재하지 않습니다. 회원가입 후 사용해주세요');
+      } else {
+        setPasswordError('회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      }
     } finally {
       setLoading(false);
     }
@@ -198,18 +285,30 @@ const Auth: React.FC = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700 font-medium">이메일</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="example@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="border-gray-300 focus:border-black focus:ring-black"
-                />
-              </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-gray-700 font-medium">이메일</Label>
+                      <div className="relative">
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="example@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className={`border-gray-300 focus:border-black focus:ring-black ${
+                            emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                          }`}
+                        />
+                        {isCheckingEmail && (
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                          </div>
+                        )}
+                      </div>
+                      {emailError && (
+                        <p className="text-sm text-red-500">{emailError}</p>
+                      )}
+                    </div>
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-700 font-medium">비밀번호</Label>
                 <Input
@@ -221,6 +320,9 @@ const Auth: React.FC = () => {
                   required
                   className="border-gray-300 focus:border-black focus:ring-black"
                 />
+                {passwordError && (
+                  <p className="text-sm text-red-500">{passwordError}</p>
+                )}
               </div>
               {!isLogin && (
                 <div className="space-y-2">
@@ -234,12 +336,15 @@ const Auth: React.FC = () => {
                     required
                     className="border-gray-300 focus:border-black focus:ring-black"
                   />
+                  {confirmPasswordError && (
+                    <p className="text-sm text-red-500">{confirmPasswordError}</p>
+                  )}
                 </div>
               )}
               <Button
                 type="submit"
                 className="w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium rounded-full"
-                disabled={loading}
+                disabled={loading || (!isLogin && (isCheckingEmail || emailError))}
               >
                 {loading ? '처리 중...' : (isLogin ? '로그인' : '회원가입')}
               </Button>
@@ -289,7 +394,7 @@ const Auth: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setIsLogin(!isLogin);
-                  setConfirmPassword('');
+                  resetForm();
                 }}
                 className="text-sm text-gray-600 hover:text-black transition-colors"
               >

@@ -21,6 +21,9 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    // 로그인하지 않은 사용자를 로그인 페이지로 리다이렉트
+    // 현재 위치를 state로 전달하여 로그인 후 원래 페이지로 돌아갈 수 있도록 함
+    console.log('인증되지 않은 사용자 감지, 로그인 페이지로 리다이렉트:', location.pathname);
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
