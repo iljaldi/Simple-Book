@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Receipt, Camera, BarChart3, Calculator, TrendingUp, TrendingDown, DollarSign, Calendar, ChevronDown, Plus, Minus, Circle } from 'lucide-react';
+import { Receipt, Camera, BarChart3, Calculator, TrendingUp, TrendingDown, DollarSign, Calendar, ChevronDown, Plus, Minus, Circle, AlertCircle, RefreshCw } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LoadingSpinner, LoadingCard } from '@/components/ui/loading';
 import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart';
 import CalendarView from '@/components/calendar/CalendarView';
 
@@ -15,6 +16,9 @@ const Dashboard: React.FC = () => {
   const [customYear, setCustomYear] = useState('2025');
   const [showCustomSelector, setShowCustomSelector] = useState(false);
   const [isCustomPeriod, setIsCustomPeriod] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const handlePeriodChange = (value: string) => {
     if (value === '사용자 지정') {
@@ -33,7 +37,42 @@ const Dashboard: React.FC = () => {
     setSelectedPeriod(customPeriod);
     setShowCustomSelector(false);
     setIsCustomPeriod(true);
+    loadDashboardData();
   };
+
+  // 데이터 로딩 시뮬레이션
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // 실제로는 API 호출을 여기서 수행
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 로딩 시뮬레이션
+      
+      // 에러 시뮬레이션 (5% 확률)
+      if (Math.random() < 0.05) {
+        throw new Error('데이터를 불러오는 중 오류가 발생했습니다.');
+      }
+      
+      setLastUpdated(new Date());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  // 기간 변경 시 데이터 다시 로드
+  useEffect(() => {
+    if (selectedPeriod !== '사용자 지정') {
+      loadDashboardData();
+    }
+  }, [selectedPeriod]);
 
   // 선택된 기간에 따른 데이터 계산
   const getPeriodData = () => {
@@ -111,6 +150,35 @@ const Dashboard: React.FC = () => {
 
   const transactionData = getTransactionData();
 
+  // 에러 상태 렌더링
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Helmet>
+          <title>대시보드 - 간편장부 | 프리랜서 1인사업자 장부관리</title>
+        </Helmet>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
+          <Card className="border-red-200">
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto mb-4 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">데이터를 불러올 수 없습니다</h3>
+              <p className="text-gray-600 mb-4">{error}</p>
+              <Button
+                onClick={loadDashboardData}
+                className="bg-black hover:bg-gray-800 text-white"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                다시 시도
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
@@ -125,11 +193,26 @@ const Dashboard: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
-        <div>
+          <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">대시보드</h1>
             <p className="text-gray-600">오늘의 장부 현황을 확인하세요</p>
+            {lastUpdated && (
+              <p className="text-sm text-gray-500 mt-1">
+                마지막 업데이트: {lastUpdated.toLocaleTimeString('ko-KR')}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadDashboardData}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              새로고침
+            </Button>
             <Select 
               value={isCustomPeriod ? 'custom' : selectedPeriod} 
               onValueChange={handlePeriodChange}
@@ -191,69 +274,93 @@ const Dashboard: React.FC = () => {
           {/* 순이익 */}
           <Card className="border border-gray-200">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                  <span className="text-lg font-bold text-purple-600">₩</span>
-            </div>
-            </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">순이익</p>
-                <p className="text-2xl font-bold text-purple-600 mb-1">₩{periodData.profit.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mb-1">{selectedPeriod} 순이익</p>
-                <p className="text-xs text-purple-600 font-medium">↑{periodData.profitChange}%</p>
-            </div>
-          </CardContent>
-        </Card>
+              {isLoading ? (
+                <LoadingCard message="순이익 데이터 로딩 중..." />
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                      <span className="text-lg font-bold text-purple-600">₩</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">순이익</p>
+                    <p className="text-2xl font-bold text-purple-600 mb-1">₩{periodData.profit.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mb-1">{selectedPeriod} 순이익</p>
+                    <p className="text-xs text-purple-600 font-medium">↑{periodData.profitChange}%</p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
           {/* 예상 세금 */}
           <Card className="border border-gray-200">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-yellow-600" />
-                </div>
-            </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">예상 세금</p>
-                <p className="text-2xl font-bold text-yellow-600 mb-1">₩{periodData.tax.toLocaleString()}</p>
-                <p className="text-xs text-gray-500">예상 부가세+소득세</p>
-            </div>
-          </CardContent>
-        </Card>
+              {isLoading ? (
+                <LoadingCard message="세금 데이터 로딩 중..." />
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                      <Calendar className="h-5 w-5 text-yellow-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">예상 세금</p>
+                    <p className="text-2xl font-bold text-yellow-600 mb-1">₩{periodData.tax.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">예상 부가세+소득세</p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
           {/* 이번 달 수입 */}
           <Card className="border border-gray-200">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-green-600" />
-            </div>
-            </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">{selectedPeriod} 수입</p>
-                <p className="text-2xl font-bold text-green-600 mb-1">₩{periodData.income.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mb-1">총 수입</p>
-                <p className="text-xs text-green-600 font-medium">↑{periodData.incomeChange}%</p>
-            </div>
-          </CardContent>
-        </Card>
+              {isLoading ? (
+                <LoadingCard message="수입 데이터 로딩 중..." />
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                      <TrendingUp className="h-5 w-5 text-green-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">{selectedPeriod} 수입</p>
+                    <p className="text-2xl font-bold text-green-600 mb-1">₩{periodData.income.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mb-1">총 수입</p>
+                    <p className="text-xs text-green-600 font-medium">↑{periodData.incomeChange}%</p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
 
           {/* 이번 달 지출 */}
           <Card className="border border-gray-200">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                  <TrendingDown className="h-5 w-5 text-red-600" />
-            </div>
-            </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">{selectedPeriod} 지출</p>
-                <p className="text-2xl font-bold text-red-600 mb-1">₩{periodData.expense.toLocaleString()}</p>
-                <p className="text-xs text-gray-500 mb-1">총 지출</p>
-                <p className="text-xs text-red-600 font-medium">↓{Math.abs(periodData.expenseChange)}%</p>
-            </div>
-          </CardContent>
-        </Card>
+              {isLoading ? (
+                <LoadingCard message="지출 데이터 로딩 중..." />
+              ) : (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                      <TrendingDown className="h-5 w-5 text-red-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">{selectedPeriod} 지출</p>
+                    <p className="text-2xl font-bold text-red-600 mb-1">₩{periodData.expense.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mb-1">총 지출</p>
+                    <p className="text-xs text-red-600 font-medium">↓{Math.abs(periodData.expenseChange)}%</p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
       </div>
 
         {/* Charts and Calendar Row */}
@@ -261,20 +368,28 @@ const Dashboard: React.FC = () => {
           {/* 월별 추세 차트 */}
           <Card className="border border-gray-200">
             <CardContent className="p-6">
-              <MonthlyTrendChart selectedYear={isCustomPeriod ? customYear : '2025'} />
+              {isLoading ? (
+                <LoadingCard message="차트 데이터 로딩 중..." />
+              ) : (
+                <MonthlyTrendChart selectedYear={isCustomPeriod ? customYear : '2025'} />
+              )}
             </CardContent>
           </Card>
 
           {/* 달력 뷰 */}
           <Card className="border border-gray-200">
             <CardContent className="p-6">
-              <CalendarView 
-                selectedYear={isCustomPeriod ? parseInt(customYear) : 2025}
-                selectedMonth={isCustomPeriod ? parseInt(customMonth) - 1 : 8}
-              />
+              {isLoading ? (
+                <LoadingCard message="달력 데이터 로딩 중..." />
+              ) : (
+                <CalendarView 
+                  selectedYear={isCustomPeriod ? parseInt(customYear) : 2025}
+                  selectedMonth={isCustomPeriod ? parseInt(customMonth) - 1 : 8}
+                />
+              )}
             </CardContent>
           </Card>
-      </div>
+        </div>
 
         {/* Recent Transactions and Quick Start Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -283,48 +398,66 @@ const Dashboard: React.FC = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-gray-900">최근 거래</CardTitle>
-                <span className="text-sm text-gray-500">{transactionData.length}건</span>
-              </div>
-          </CardHeader>
-          <CardContent>
-              <div className="space-y-3">
-                {transactionData.map((transaction, index) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
-                      }`}>
-                        {transaction.type === 'income' ? (
-                          <Plus className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <Minus className="h-4 w-4 text-red-600" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{transaction.company}</p>
-                        <p className="text-sm text-gray-500">{transaction.date}</p>
-              </div>
-                    </div>
-                    <span className={`font-medium ${
-                      transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {transaction.type === 'income' ? '+' : '-'}₩{transaction.amount.toLocaleString()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-          </CardContent>
-        </Card>
-
-          {/* 고정 지출 */}
-          <Card className="border border-gray-200">
-          <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-gray-900">고정 지출</CardTitle>
-                <span className="text-sm text-gray-500">7건</span>
+                {!isLoading && (
+                  <span className="text-sm text-gray-500">{transactionData.length}건</span>
+                )}
               </div>
             </CardHeader>
             <CardContent>
+              {isLoading ? (
+                <LoadingCard message="거래 내역 로딩 중..." />
+              ) : (
+                <div className="space-y-3">
+                  {transactionData.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <Circle className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                      <p>거래 내역이 없습니다</p>
+                    </div>
+                  ) : (
+                    transactionData.map((transaction, index) => (
+                      <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+                          }`}>
+                            {transaction.type === 'income' ? (
+                              <Plus className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Minus className="h-4 w-4 text-red-600" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{transaction.company}</p>
+                            <p className="text-sm text-gray-500">{transaction.date}</p>
+                          </div>
+                        </div>
+                        <span className={`font-medium ${
+                          transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {transaction.type === 'income' ? '+' : '-'}₩{transaction.amount.toLocaleString()}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 고정 지출 */}
+          <Card className="border border-gray-200">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-gray-900">고정 지출</CardTitle>
+                {!isLoading && (
+                  <span className="text-sm text-gray-500">7건</span>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <LoadingCard message="고정 지출 데이터 로딩 중..." />
+              ) : (
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <div className="flex items-center gap-3">
@@ -415,10 +548,11 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                   <span className="font-medium text-red-600">-₩50,000</span>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
