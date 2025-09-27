@@ -24,7 +24,8 @@ const StorySection = () => {
                     alignItems: 'center',
                     gap: '8px',
                     borderRadius: '54px 0 54px 54px',
-                    border: '1px solid #D7D7D7'
+                    border: '1px solid #D7D7D7',
+                    backgroundColor: '#ffffff'
                   }}
                 >
                   영수증이 카톡·드라이브·이메일에<br />
@@ -55,7 +56,8 @@ const StorySection = () => {
                     alignItems: 'center',
                     gap: '8px',
                     borderRadius: '0 54px 54px 54px',
-                    border: '1px solid #D7D7D7'
+                    border: '1px solid #D7D7D7',
+                    backgroundColor: '#ffffff'
                   }}
                 >
                   신고 기준이 어렵고,<br />
@@ -76,7 +78,8 @@ const StorySection = () => {
                     alignItems: 'center',
                     gap: '8px',
                     borderRadius: '54px 0 54px 54px',
-                    border: '1px solid #D7D7D7'
+                    border: '1px solid #D7D7D7',
+                    backgroundColor: '#ffffff'
                   }}
                 >
                   디자이너 업에 맞는<br />
@@ -107,7 +110,8 @@ const StorySection = () => {
                     alignItems: 'center',
                     gap: '8px',
                     borderRadius: '0 54px 54px 54px',
-                    border: '1px solid #D7D7D7'
+                    border: '1px solid #D7D7D7',
+                    backgroundColor: '#ffffff'
                   }}
                 >
                   기존 서비스는 수수료/환급 구조가<br />
@@ -128,7 +132,8 @@ const StorySection = () => {
                     alignItems: 'center',
                     gap: '8px',
                     borderRadius: '54px 0 54px 54px',
-                    border: '1px solid #D7D7D7'
+                    border: '1px solid #D7D7D7',
+                    backgroundColor: '#ffffff'
                   }}
                 >
                   홈택스 용어가 낯설어<br />

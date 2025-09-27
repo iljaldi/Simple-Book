@@ -43,13 +43,13 @@ const HeroMain = () => {
       <div 
         className={`absolute inset-0 transform transition-all duration-1000 ease-out ${
           isLoaded 
-            ? 'opacity-25' 
+            ? 'opacity-20 sm:opacity-25' 
             : 'opacity-0'
         }`}
         style={{
           backgroundImage: 'url(/images/main-hero-bg.png)',
-          backgroundSize: 'auto 80%',
-          backgroundPosition: 'center 20%',
+          backgroundSize: 'auto 50%',
+          backgroundPosition: 'center 10%',
           backgroundRepeat: 'no-repeat',
           animation: 'float 6s ease-in-out infinite, fadeInOut 8s ease-in-out infinite'
         }}
@@ -98,7 +98,7 @@ const HeroMain = () => {
             >
               <Link to={user ? "/dashboard" : "/auth"}>
                 <span className="hidden sm:inline">{user ? "대시보드" : "설문 참여하기"}</span>
-                <span className="sm:hidden">{user ? "대시보드" : "참여"}</span>
+                <span className="sm:hidden">{user ? "대시보드" : "설문 참여"}</span>
               </Link>
             </Button>
           </div>
@@ -211,7 +211,7 @@ const HeroMain = () => {
           loop
           muted
           playsInline
-          className="relative z-20 w-full max-w-[280px] sm:max-w-[400px] md:max-w-[600px] lg:max-w-[800px] xl:max-w-[1200px] rounded-xl sm:rounded-2xl"
+          className="relative z-20 max-w-[1200px] rounded-2xl"
           style={{
             filter: 'drop-shadow(0 6px 12px rgba(148, 20, 209, 0.06)) drop-shadow(0 2px 4px rgba(148, 20, 209, 0.03))'
           }}
