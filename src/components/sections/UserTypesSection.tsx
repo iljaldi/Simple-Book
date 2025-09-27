@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 
 const UserTypesSection = () => {
   return (
-    <section className="px-4 pt-48 pb-48 sm:px-6 lg:px-8 bg-white">
+    <section className="px-4 pt-48 pb-48 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-[1056px] mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold text-foreground mb-6 leading-tight">
@@ -24,33 +24,28 @@ const UserTypesSection = () => {
               <div className="flex items-start space-x-3">
                 <i className="ri-check-line h-5 w-5 text-success flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-semibold text-foreground mb-1">소득·지출 정리</div>
-                  <div className="text-sm text-muted-foreground">프리랜서 활동으로 발생한 모든 수입과 지출을 체계적으로 관리</div>
+                <div className="font-semibold text-foreground mb-1">합법적으로 세금 절약을 위한 증빙</div>
+                <div className="text-sm text-muted-foreground">장부 없으면 경비 처리 한계 → 세금 더 냄</div>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
                 <i className="ri-check-line h-5 w-5 text-success flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-semibold text-foreground mb-1">종합소득세 대비</div>
-                  <div className="text-sm text-muted-foreground">연말정산 시기에 필요한 소득 신고 자료를 미리 준비</div>
+                <div className="font-semibold text-foreground mb-1">소명요청과 가산세 리스크 방지</div>
+                <div className="text-sm text-muted-foreground">누락·착오로 인한 가산세도 예방</div>
                 </div>
               </div>
 
               <div className="flex items-start space-x-3">
                 <i className="ri-check-line h-5 w-5 text-success flex-shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-semibold text-foreground mb-1">실제 순수익 파악</div>
-                  <div className="text-sm text-muted-foreground">각종 경비를 제외한 실제 수익을 정확히 계산</div>
+                <div className="font-semibold text-foreground mb-1">단가를 알기 위한 비용 구조 파악</div>
+                <div className="text-sm text-muted-foreground">장부로 원가·이익률이 보이면 견적을 한눈에 파악</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mt-6">
-              <p className="text-sm text-blue-800">
-                사업자등록 없이도 연 2천만원 이상 수입이 있으면 종합소득세 신고 의무가 있어요
-              </p>
-            </div>
           </Card>
 
           {/* 사업자 프리랜서 */}
@@ -87,11 +82,6 @@ const UserTypesSection = () => {
 
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mt-6">
-              <p className="text-sm text-blue-800">
-                사업자 프리랜서라면 부가세 신고까지 자동화할 수 있어요
-              </p>
-            </div>
           </Card>
         </div>
       </div>

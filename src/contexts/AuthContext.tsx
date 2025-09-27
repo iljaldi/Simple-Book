@@ -19,29 +19,14 @@ export const useAuth = () => {
   return context;
 };
 
-// 세션 만료 시간 (8시간 - 더 안전한 설정)
-const SESSION_EXPIRY_HOURS = 8;
 
-// 세션 유효성 검증 함수
+// 세션 유효성 검증 함수 (Supabase 자동 갱신에 의존)
 const isSessionValid = (session: Session | null): boolean => {
   if (!session) return false;
   
-  const now = new Date().getTime();
-  const sessionCreatedAt = new Date(session.created_at).getTime();
-  const expiryTime = sessionCreatedAt + (SESSION_EXPIRY_HOURS * 60 * 60 * 1000);
-  
-  // 세션이 만료되었는지 확인
-  const isExpired = now >= expiryTime;
-  
-  if (isExpired) {
-    console.log('세션 만료됨:', {
-      created: new Date(sessionCreatedAt).toISOString(),
-      expired: new Date(expiryTime).toISOString(),
-      now: new Date(now).toISOString()
-    });
-  }
-  
-  return !isExpired;
+  // Supabase가 자동으로 세션을 갱신하므로 세션이 있으면 유효한 것으로 간주
+  // 실제 만료는 Supabase가 자동으로 처리
+  return true;
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -69,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return sessionId;
     };
 
-    // 페이지 로드 시 이전 세션 상태 확인
+    // 페이지 로드 시 이전 세션 상태 확인 (완화된 버전)
     const checkPreviousSession = () => {
       const lastActivity = localStorage.getItem('last_activity');
       const browserSession = sessionStorage.getItem('auth_session');
@@ -88,16 +73,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
       
-      // 브라우저 세션이 없으면 무조건 로그아웃
-      if (!browserSession) {
-        console.log('브라우저 세션 없음 - 로그아웃 상태');
-        localStorage.removeItem('last_activity');
-        localStorage.removeItem('current_session_id');
-        return false;
-      }
-      
-      // 5분 이상 비활성 상태면 세션 무효화
-      if (lastActivity && (currentTime - parseInt(lastActivity)) > 5 * 60 * 1000) {
+      // 브라우저 세션이 없어도 Supabase 세션이 있으면 허용 (초기 로그인 시)
+      // 단, 30분 이상 비활성 상태면 세션 무효화
+      if (lastActivity && (currentTime - parseInt(lastActivity)) > 30 * 60 * 1000) {
         console.log('장시간 비활성 상태 - 세션 무효화');
         localStorage.removeItem('last_activity');
         localStorage.removeItem('current_session_id');

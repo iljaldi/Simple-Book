@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/ui/loading';
-import { FileText, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, Eye, EyeOff, CheckCircle, XCircle, X } from 'lucide-react';
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -31,6 +31,7 @@ const Auth: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isManuallyCleared, setIsManuallyCleared] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -57,6 +58,7 @@ const Auth: React.FC = () => {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setIsSubmitting(false);
+    setIsManuallyCleared(false);
   }, [isLogin]);
 
   // 비밀번호 강도 측정 (회원가입 모드에서만)
@@ -135,8 +137,20 @@ const Auth: React.FC = () => {
 
   // 이메일 존재 여부 검사 (디바운스, RPC: public.email_exists)
   useEffect(() => {
+    console.log('이메일 useEffect 실행:', { email, isManuallyCleared, isLogin });
+    
     if (!email) {
       setEmailError('');
+      // 수동으로 클리어된 경우가 아니면 isManuallyCleared를 false로 리셋
+      if (!isManuallyCleared) {
+        setIsManuallyCleared(false);
+      }
+      return;
+    }
+
+    // 수동으로 클리어된 경우 체크하지 않음
+    if (isManuallyCleared) {
+      console.log('수동으로 클리어됨 - 이메일 체크 건너뜀');
       return;
     }
 
@@ -169,7 +183,7 @@ const Auth: React.FC = () => {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [email, isLogin]);
+  }, [email, isLogin, isManuallyCleared]);
 
   const handleSignUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/`;
@@ -195,7 +209,8 @@ const Auth: React.FC = () => {
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
-      if (import.meta.env.DEV) console.log('구글 로그인 시도 중...');
+      console.log('구글 로그인 시도 중...');
+      console.log('현재 도메인:', window.location.origin);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -208,18 +223,23 @@ const Auth: React.FC = () => {
         }
       });
 
-      if (import.meta.env.DEV) console.log('구글 로그인 응답:', { data, error });
+      console.log('구글 로그인 응답:', { data, error });
 
       if (error) {
-        if (import.meta.env.DEV) console.error('구글 로그인 오류:', error);
-        if (import.meta.env.DEV) console.error('오류 상세 정보:', {
+        console.error('구글 로그인 오류:', error);
+        console.error('오류 상세 정보:', {
           message: error.message,
-          status: error.status
+          status: error.status,
+          name: error.name
         });
         
         let errorMessage = error.message;
-        if (error.message.includes('Invalid token')) {
-          errorMessage = "Google OAuth 설정이 올바르지 않습니다. 관리자에게 문의하세요.";
+        if (error.message.includes('Invalid token') || error.message.includes('signature is invalid')) {
+          errorMessage = "Google OAuth가 설정되지 않았습니다. 관리자에게 문의하세요.";
+        } else if (error.message.includes('Provider not found')) {
+          errorMessage = "Google 로그인이 비활성화되어 있습니다.";
+        } else if (error.message.includes('Invalid redirect URL')) {
+          errorMessage = "리디렉션 URL이 올바르지 않습니다.";
         }
         
         toast({
@@ -228,7 +248,7 @@ const Auth: React.FC = () => {
           variant: "destructive",
         });
       } else {
-        if (import.meta.env.DEV) console.log('구글 로그인 성공:', data);
+        console.log('구글 로그인 성공:', data);
         toast({
           title: "구글 로그인 시작",
           description: "구글 인증 페이지로 이동합니다. 팝업이 차단되었다면 팝업 차단을 해제해주세요.",
@@ -378,16 +398,39 @@ const Auth: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700 font-medium">이메일</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="example@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onBlur={() => checkEmailNow(email)}
-                  required
-                  className="border-gray-300 focus:border-black focus:ring-black"
-                />
+                <div className="relative">
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="example@email.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      // 새로운 텍스트를 입력할 때만 수동 클리어 상태를 리셋
+                      if (e.target.value.length > 0) {
+                        setIsManuallyCleared(false);
+                      }
+                    }}
+                    onBlur={() => checkEmailNow(email)}
+                    required
+                    className="border-gray-300 focus:border-black focus:ring-black pr-10"
+                  />
+                  {email && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        console.log('× 버튼 클릭 - 이메일 초기화');
+                        setEmail('');
+                        setEmailError('');
+                        setIsCheckingEmail(false);
+                        setIsManuallyCleared(true);
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
                 <div className="text-xs h-4" aria-live="polite">
                   {isCheckingEmail && (
                     <span className="text-gray-500">
@@ -409,15 +452,30 @@ const Auth: React.FC = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="border-gray-300 focus:border-black focus:ring-black pr-10"
+                    className="border-gray-300 focus:border-black focus:ring-black pr-20"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                    {password && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPassword('');
+                          setPasswordStrength({ score: 0, label: '', color: '' });
+                          setPasswordCriteria({ length: false, lowercase: false, uppercase: false, number: false, special: false });
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
                 {!isLogin && (
                   <div className="mt-2 space-y-1">
@@ -478,15 +536,29 @@ const Auth: React.FC = () => {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
-                      className="border-gray-300 focus:border-black focus:ring-black pr-10"
+                      className="border-gray-300 focus:border-black focus:ring-black pr-20"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                      {confirmPassword && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setConfirmPassword('');
+                            setPasswordConfirmError('');
+                          }}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   {passwordConfirmError && (
                     <div className="text-xs text-red-600 mt-1 flex items-center gap-1" aria-live="polite">

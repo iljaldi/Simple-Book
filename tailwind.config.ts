@@ -121,6 +121,12 @@ export default {
 				'light-blue': 'var(--color-light-blue)',
 				'light-gray-blue': 'var(--color-light-gray-blue)',
 				'mint-accent': 'var(--color-mint)',
+				// Secondary Colors
+				'secondary-1': 'var(--color-secondary-1)',
+				'secondary-2': 'var(--color-secondary-2)',
+				'secondary-3': 'var(--color-secondary-3)',
+				'secondary-4': 'var(--color-secondary-4)',
+				'secondary-5': 'var(--color-secondary-5)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
