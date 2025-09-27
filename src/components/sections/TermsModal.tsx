@@ -11,34 +11,34 @@ const TermsModal = ({ isOpen, onClose }: TermsModalProps) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+        className="bg-white rounded-xl sm:rounded-2xl max-w-xs sm:max-w-lg md:max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">이용약관</h2>
+        <div className="p-4 sm:p-6 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">이용약관</h2>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="p-2"
+              className="p-1 sm:p-2"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
           
-          <div className="space-y-4 text-sm leading-relaxed">
+          <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm leading-relaxed">
             <div>
-              <h3 className="font-semibold text-lg mb-2">제1조(목적)</h3>
+              <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">제1조(목적)</h3>
               <p>본 약관은 일잘디.랩(이하 "회사")이 제공하는 Simple Book 서비스(이하 "서비스")의 이용과 관련하여 회사와 이용자 간 권리·의무 및 책임사항을 규정함을 목적으로 합니다.</p>
             </div>
 
             <div>
-              <h3 className="font-semibold text-lg mb-2">제2조(정의)</h3>
+              <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">제2조(정의)</h3>
               <p>"서비스"란 프리랜서 및 1인 사업자를 위한 간편장부 관리 및 신고서류 생성 지원 등의 온라인 서비스를 말합니다.</p>
               <p>"이용자"란 본 약관에 따라 서비스를 이용하는 회원 및 비회원을 말합니다.</p>
               <p>"회원"이란 계정을 생성하고 지속적으로 서비스를 이용할 수 있는 자를 말합니다.</p>

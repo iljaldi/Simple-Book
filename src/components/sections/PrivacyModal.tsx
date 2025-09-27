@@ -11,29 +11,29 @@ const PrivacyModal = ({ isOpen, onClose }: PrivacyModalProps) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden"
+        className="bg-white rounded-xl sm:rounded-2xl max-w-xs sm:max-w-lg md:max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">개인정보 처리방침</h2>
+        <div className="p-4 sm:p-6 max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">개인정보 처리방침</h2>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="p-2"
+              className="p-1 sm:p-2"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
           
-          <div className="space-y-4 text-sm leading-relaxed">
+          <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm leading-relaxed">
             <div>
-              <h3 className="font-semibold text-lg mb-2">제1조 (개인정보의 처리목적)</h3>
+              <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">제1조 (개인정보의 처리목적)</h3>
               <p>일잘디.랩(이하 "회사")은 다음의 목적을 위하여 개인정보를 처리합니다. 처리하고 있는 개인정보는 다음의 목적 이외의 용도로는 이용되지 않으며, 이용 목적이 변경되는 경우에는 개인정보보호법 제18조에 따라 별도의 동의를 받는 등 필요한 조치를 이행할 예정입니다.</p>
               <p className="mt-2">1. 서비스 제공: 간편장부 관리 서비스 제공</p>
               <p>2. 회원 관리: 회원 식별, 가입의사 확인, 본인확인, 회원자격 유지·관리</p>

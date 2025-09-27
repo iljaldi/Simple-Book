@@ -34,27 +34,27 @@ const CountdownTimer: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex justify-center items-center gap-3 sm:gap-4">
-      <div className="bg-gray-100 rounded-lg px-4 py-3 sm:px-6 sm:py-4 text-center min-w-[80px] sm:min-w-[100px]">
-        <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-black font-mono">
+    <div className="flex justify-center items-center gap-2 sm:gap-3 md:gap-4 flex-wrap">
+      <div className="bg-gray-100 rounded-lg px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 text-center min-w-[60px] sm:min-w-[80px] md:min-w-[100px]">
+        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black font-mono">
           {timeLeft.days.toString().padStart(2, '0')}
         </div>
         <div className="text-xs sm:text-sm text-black">일</div>
       </div>
-      <div className="bg-gray-100 rounded-lg px-4 py-3 sm:px-6 sm:py-4 text-center min-w-[80px] sm:min-w-[100px]">
-        <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-black font-mono">
+      <div className="bg-gray-100 rounded-lg px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 text-center min-w-[60px] sm:min-w-[80px] md:min-w-[100px]">
+        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black font-mono">
           {timeLeft.hours.toString().padStart(2, '0')}
         </div>
         <div className="text-xs sm:text-sm text-black">시간</div>
       </div>
-      <div className="bg-gray-100 rounded-lg px-4 py-3 sm:px-6 sm:py-4 text-center min-w-[80px] sm:min-w-[100px]">
-        <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-black font-mono">
+      <div className="bg-gray-100 rounded-lg px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 text-center min-w-[60px] sm:min-w-[80px] md:min-w-[100px]">
+        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black font-mono">
           {timeLeft.minutes.toString().padStart(2, '0')}
         </div>
         <div className="text-xs sm:text-sm text-black">분</div>
       </div>
-      <div className="bg-gray-100 rounded-lg px-4 py-3 sm:px-6 sm:py-4 text-center min-w-[80px] sm:min-w-[100px]">
-        <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-black font-mono">
+      <div className="bg-gray-100 rounded-lg px-3 py-2 sm:px-4 sm:py-3 md:px-6 md:py-4 text-center min-w-[60px] sm:min-w-[80px] md:min-w-[100px]">
+        <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black font-mono">
           {timeLeft.seconds.toString().padStart(2, '0')}
         </div>
         <div className="text-xs sm:text-sm text-black">초</div>
