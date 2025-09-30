@@ -5,16 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/design-system/Modal';
 import { Download, FileText, FileSpreadsheet, Calendar, CheckCircle, Trash2, Eye, X, Shield, Star, Users, Clock } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+// PDF 생성 기능은 필요시 활성화
+// import jsPDF from 'jspdf';
+// import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
-// jsPDF 타입 확장
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
+// jsPDF 타입 확장 (필요시 활성화)
+// declare module 'jspdf' {
+//   interface jsPDF {
+//     autoTable: (options: any) => jsPDF;
+//   }
+// }
 
 const Exports: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
@@ -179,90 +180,8 @@ Transportation,20000,${currentDate},Expense`;
   };
 
   const generatePDFContent = (pkg: any, fileName: string) => {
-    try {
-      // jsPDF를 사용한 PDF 생성
-      const pdf = new jsPDF();
-      const currentDate = new Date().toISOString().split('T')[0];
-      
-      // 제목
-      pdf.setFontSize(20);
-      pdf.text(pkg.name, 20, 30);
-      
-      // 기본 정보
-      pdf.setFontSize(12);
-      pdf.text(`Report Year: ${pkg.year}`, 20, 50);
-      pdf.text(`Created Date: ${currentDate}`, 20, 60);
-      pdf.text(`File Format: ${pkg.format.toUpperCase()}`, 20, 70);
-      
-      // 구분선
-      pdf.line(20, 80, 190, 80);
-      
-      // 재무 정보
-      pdf.setFontSize(14);
-      pdf.text('Financial Summary', 20, 95);
-      
-      pdf.setFontSize(10);
-      pdf.text('Income: 2,500,000 KRW', 20, 110);
-      pdf.text('Expenses: 1,800,000 KRW', 20, 120);
-      pdf.text('Net Profit: 700,000 KRW', 20, 130);
-      
-      // 세금 정보
-      pdf.setFontSize(14);
-      pdf.text('Tax Calculation', 20, 150);
-      
-      pdf.setFontSize(10);
-      pdf.text('VAT: 70,000 KRW (10% of Net Profit)', 20, 165);
-      pdf.text('Income Tax: 140,000 KRW (20% of Net Profit)', 20, 175);
-      
-      // 거래 내역
-      pdf.setFontSize(14);
-      pdf.text('Transaction Details', 20, 195);
-      
-      pdf.setFontSize(10);
-      pdf.text('Sales: 500,000 KRW', 20, 210);
-      pdf.text('Salary: 300,000 KRW', 20, 220);
-      pdf.text('Office Supplies: 50,000 KRW', 20, 230);
-      pdf.text('Communication: 30,000 KRW', 20, 240);
-      pdf.text('Transportation: 20,000 KRW', 20, 250);
-      
-      // PDF 다운로드
-      pdf.save(fileName);
-    } catch (error) {
-      console.error('PDF 생성 중 오류:', error);
-      // 대안: 간단한 텍스트 파일로 다운로드
-      const textContent = `
-${pkg.name}
-Report Year: ${pkg.year}
-Created Date: ${new Date().toISOString().split('T')[0]}
-File Format: ${pkg.format.toUpperCase()}
-
-Financial Summary:
-- Income: 2,500,000 KRW
-- Expenses: 1,800,000 KRW
-- Net Profit: 700,000 KRW
-
-Tax Calculation:
-- VAT: 70,000 KRW (10% of Net Profit)
-- Income Tax: 140,000 KRW (20% of Net Profit)
-
-Transaction Details:
-- Sales: 500,000 KRW
-- Salary: 300,000 KRW
-- Office Supplies: 50,000 KRW
-- Communication: 30,000 KRW
-- Transportation: 20,000 KRW
-      `;
-      
-      const blob = new Blob([textContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName.replace('.pdf', '.txt');
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
+    // PDF 생성 기능은 필요시 활성화
+    alert('PDF 생성 기능은 준비 중입니다.');
   };
 
   const handleDeletePackage = (packageId: number) => {

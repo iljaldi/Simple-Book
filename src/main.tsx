@@ -21,3 +21,4 @@ try {
 } catch (error) {
   console.error('Error in main.tsx:', error);
 }
+

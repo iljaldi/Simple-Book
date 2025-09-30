@@ -31,10 +31,13 @@ const Footer = () => {
               <span className="text-lg sm:text-xl font-bold text-white">Simple Book</span>
             </button>
             
-            <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
-              1인 기업·프리랜서 디자이너를 위한 가장 쉬운 장부 관리 서비스입니다.<br />
-              수입·지출 입력부터 세금 보고서까지, 하루 5분 만에 끝냅니다.
-            </p>
+        <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
+          <span className="block sm:hidden">1인 기업·프리랜서 디자이너를 위한</span>
+          <span className="block sm:hidden">가장 쉬운 장부 관리 서비스입니다</span>
+          <span className="block sm:hidden">수입·지출 입력부터 세금 보고서까지,</span>
+          <span className="block sm:hidden">하루 5분 만에 끝냅니다.</span>
+          <span className="hidden sm:block">1인 기업·프리랜서 디자이너를 위한 가장 쉬운 장부 관리 서비스입니다.<br />수입·지출 입력부터 세금 보고서까지, 하루 5분 만에 끝냅니다.</span>
+        </p>
           </div>
 
           {/* 회사 정보 */}

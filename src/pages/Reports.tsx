@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { BarChart3, TrendingUp, Calendar, Download, PieChart, LineChart, DollarSign, Shield, CheckCircle, Star, Users, Clock } from 'lucide-react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+// PDF 생성 기능은 필요시 활성화
+// import jsPDF from 'jspdf';
+// import html2canvas from 'html2canvas';
 
 const Reports: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('this-month');
@@ -42,55 +43,8 @@ const Reports: React.FC = () => {
   };
 
   const handleDownloadReport = async () => {
-    if (!reportRef.current) return;
-    
-    setIsDownloading(true);
-    
-    try {
-      // 리포트 영역을 캡처
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      
-      // PDF 생성
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 295;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      
-      let position = 0;
-      
-      // 첫 페이지 추가
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      // 추가 페이지가 필요한 경우
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      
-      // 파일명 생성
-      const periodLabel = periods.find(p => p.value === selectedPeriod)?.label || '기간';
-      const fileName = `재무리포트_${periodLabel}_${new Date().toISOString().split('T')[0]}.pdf`;
-      
-      // PDF 다운로드
-      pdf.save(fileName);
-      
-    } catch (error) {
-      console.error('리포트 다운로드 중 오류가 발생했습니다:', error);
-      alert('리포트 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsDownloading(false);
-    }
+    // PDF 다운로드 기능은 필요시 활성화
+    alert('PDF 다운로드 기능은 준비 중입니다.');
   };
 
   // 더미 데이터

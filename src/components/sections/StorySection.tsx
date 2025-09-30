@@ -2,11 +2,13 @@
 
 const StorySection = () => {
   return (
-    <section id="about" className="px-4 pt-24 pb-12 sm:pt-48 sm:pb-24 sm:px-6 lg:px-8 bg-gray-50">
+    <section id="about" className="px-4 pt-12 pb-12 sm:pt-48 sm:pb-24 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-[1056px] mx-auto">
         <div className="mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold text-foreground mb-20 sm:mb-24 leading-tight text-center">
-            세무 때문에 이런 고민 있으신가요?
+          <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold text-foreground mb-10 sm:mb-24 leading-tight text-center mt-8 sm:mt-0">
+            <span className="block sm:hidden">세무 때문에</span>
+            <span className="block sm:hidden">이런 고민 있으신가요?</span>
+            <span className="hidden sm:block">세무 때문에 이런 고민 있으신가요?</span>
           </h2>
           
           <div className="max-w-[640px] mx-auto">
@@ -14,11 +16,10 @@ const StorySection = () => {
               {/* 첫번째 - 오른쪽 */}
               <div className="flex items-center gap-4 sm:gap-6">
                 <div 
-                  className="text-lg sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white"
+                  className="text-[0.825rem] sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white h-[90px] sm:h-[150px]"
                   style={{
                     display: 'flex',
                     width: '400px',
-                    height: '150px',
                     padding: '8px',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -34,7 +35,7 @@ const StorySection = () => {
                 <img 
                   src="/images/face1.svg" 
                   alt="고민 표정 1" 
-                  className="w-16 h-16 sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
+                  className="w-[90px] h-[90px] sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
                 />
               </div>
               
@@ -43,14 +44,13 @@ const StorySection = () => {
                 <img 
                   src="/images/face2.svg" 
                   alt="고민 표정 2" 
-                  className="w-16 h-16 sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
+                  className="w-[90px] h-[90px] sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
                 />
                 <div 
-                  className="text-lg sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white"
+                  className="text-[0.825rem] sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white h-[90px] sm:h-[150px]"
                   style={{
                     display: 'flex',
                     width: '400px',
-                    height: '150px',
                     padding: '8px',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -68,11 +68,10 @@ const StorySection = () => {
               {/* 세번째 - 오른쪽 */}
               <div className="flex items-center gap-4 sm:gap-6">
                 <div 
-                  className="text-lg sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white"
+                  className="text-[0.825rem] sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white h-[90px] sm:h-[150px]"
                   style={{
                     display: 'flex',
                     width: '400px',
-                    height: '150px',
                     padding: '8px',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -88,7 +87,7 @@ const StorySection = () => {
                 <img 
                   src="/images/face3.svg" 
                   alt="고민 표정 3" 
-                  className="w-16 h-16 sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
+                  className="w-[90px] h-[90px] sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
                 />
               </div>
               
@@ -97,14 +96,13 @@ const StorySection = () => {
                 <img 
                   src="/images/face4.svg" 
                   alt="고민 표정 4" 
-                  className="w-16 h-16 sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
+                  className="w-[90px] h-[90px] sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
                 />
                 <div 
-                  className="text-lg sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white"
+                  className="text-[0.825rem] sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white h-[90px] sm:h-[150px]"
                   style={{
                     display: 'flex',
                     width: '400px',
-                    height: '150px',
                     padding: '8px',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -122,11 +120,10 @@ const StorySection = () => {
               {/* 다섯번째 - 오른쪽 */}
               <div className="flex items-center gap-4 sm:gap-6">
                 <div 
-                  className="text-lg sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white"
+                  className="text-[0.825rem] sm:text-[24px] text-gray-700 font-medium leading-[150%] text-left flex-1 bg-white h-[90px] sm:h-[150px]"
                   style={{
                     display: 'flex',
                     width: '400px',
-                    height: '150px',
                     padding: '8px',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -142,7 +139,7 @@ const StorySection = () => {
                 <img 
                   src="/images/face5.svg" 
                   alt="고민 표정 5" 
-                  className="w-16 h-16 sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
+                  className="w-[90px] h-[90px] sm:w-[180px] sm:h-[180px] object-contain flex-shrink-0"
                 />
               </div>
             </div>

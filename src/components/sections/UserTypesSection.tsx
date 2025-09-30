@@ -3,16 +3,16 @@ import { Badge } from "@/components/ui/badge";
 
 const UserTypesSection = () => {
   return (
-    <section className="px-4 pt-48 pb-48 sm:px-6 lg:px-8 bg-gray-50">
+    <section className="px-4 pt-24 pb-24 sm:pt-48 sm:pb-48 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-[1056px] mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold text-foreground mb-6 leading-tight">
             <div className="text-purple-600">사업자등록 여부와 상관없이</div>
-            <div className="mt-3">Simple Book은 필요합니다</div>
+            <div className="mt-1 sm:mt-3">Simple Book은 필요합니다</div>
           </h2>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-12">
           {/* 비사업자 프리랜서 */}
           <Card className="p-8 shadow-card flex flex-col h-full">
             <div className="mb-6">
