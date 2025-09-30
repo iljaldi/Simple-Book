@@ -1,80 +1,44 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 
-const TestPage = () => {
-  console.log('TestPage is rendering');
+const TestPage: React.FC = () => {
+  console.log('TestPage 렌더링 중...');
   
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      padding: '2rem', 
-      backgroundColor: '#f0f0f0',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <div style={{ 
-        maxWidth: '800px', 
-        margin: '0 auto',
-        backgroundColor: 'white',
-        padding: '2rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }}>
-        <h1 style={{ 
-          fontSize: '2rem', 
-          color: '#333',
-          marginBottom: '1rem',
-          textAlign: 'center'
-        }}>
-          🚀 Test Page Working! 🚀
-        </h1>
-        
-        <div style={{
-          backgroundColor: '#4CAF50',
-          color: 'white',
-          padding: '1rem',
-          borderRadius: '4px',
-          marginBottom: '1rem',
-          textAlign: 'center',
-          fontSize: '1.2rem',
-          fontWeight: 'bold'
-        }}>
-          ✅ React is working perfectly!
-        </div>
-        
-        <p style={{ 
-          fontSize: '1.1rem', 
-          color: '#666',
-          lineHeight: '1.6',
-          marginBottom: '1rem'
-        }}>
-          이 페이지가 보인다면 React 애플리케이션이 정상적으로 작동하고 있습니다.
-        </p>
-        
-        <div style={{
-          backgroundColor: '#2196F3',
-          color: 'white',
-          padding: '1rem',
-          borderRadius: '4px',
-          marginBottom: '1rem'
-        }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>현재 시간:</h3>
-          <p style={{ margin: 0, fontSize: '1.1rem' }}>
-            {new Date().toLocaleString('ko-KR')}
+    <>
+      <Helmet>
+        <title>테스트 페이지 - 간편장부</title>
+        <meta name="description" content="개발 중 테스트 페이지입니다." />
+      </Helmet>
+      
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            테스트 페이지가 정상 작동합니다! 🎉
+          </h1>
+          <p className="text-lg text-gray-600 mb-8">
+            React 앱이 정상적으로 렌더링되고 있습니다.
           </p>
-        </div>
-        
-        <div style={{
-          backgroundColor: '#FF9800',
-          color: 'white',
-          padding: '1rem',
-          borderRadius: '4px'
-        }}>
-          <h3 style={{ margin: '0 0 0.5rem 0' }}>브라우저 정보:</h3>
-          <p style={{ margin: 0, fontSize: '0.9rem' }}>
-            User Agent: {navigator.userAgent}
-          </p>
+          <div className="bg-white p-6 rounded-lg shadow-md max-w-md mx-auto">
+            <h2 className="text-xl font-semibold mb-4">상태 확인</h2>
+            <ul className="text-left space-y-2">
+              <li>✅ React 컴포넌트 렌더링</li>
+              <li>✅ Tailwind CSS 스타일링</li>
+              <li>✅ Helmet 메타 태그</li>
+              <li>✅ 콘솔 로그 출력</li>
+            </ul>
+          </div>
+          <div className="mt-8">
+            <a 
+              href="/dashboard" 
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              대시보드로 이동
+            </a>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

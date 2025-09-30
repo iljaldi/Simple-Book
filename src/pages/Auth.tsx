@@ -7,21 +7,31 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { FileText } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading';
+import { FileText, Eye, EyeOff, CheckCircle, XCircle, X } from 'lucide-react';
 
 const Auth: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true); // Start in login mode
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [emailError, setEmailError] = useState<string>('');
+  const [passwordStrength, setPasswordStrength] = useState<{ score: number; label: string; color: string }>({ score: 0, label: '', color: '' });
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    length: false,
+    lowercase: false,
+    uppercase: false,
+    number: false,
+    special: false
+  });
+  const [passwordConfirmError, setPasswordConfirmError] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isManuallyCleared, setIsManuallyCleared] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,111 +39,162 @@ const Auth: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // 폼 초기화 함수
-  const resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setEmailError('');
-    setPasswordError('');
-    setConfirmPasswordError('');
-    setIsCheckingEmail(false);
-    setShowPassword(false);
-    setShowConfirmPassword(false);
-  };
-
   useEffect(() => {
     if (user) {
       navigate(from, { replace: true });
     }
   }, [user, navigate, from]);
 
-  // 실시간 이메일 중복 체크
+  // 로그인/회원가입 모드 전환 시 입력값 초기화
   useEffect(() => {
-    if (!isLogin && email && email.includes('@') && email.includes('.')) {
-      const checkEmailDuplicate = async () => {
-        setIsCheckingEmail(true);
-        setEmailError('');
-        
-        try {
-          // 임시 비밀번호로 회원가입 시도하여 중복 여부 확인
-          const { data: signupData, error: signupError } = await supabase.auth.signUp({
-            email,
-            password: 'TempPassword123!@#',
-            options: {
-              emailRedirectTo: `${window.location.origin}/auth`
-            }
-          });
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setEmailError('');
+    setIsCheckingEmail(false);
+    setPasswordStrength({ score: 0, label: '', color: '' });
+    setPasswordCriteria({ length: false, lowercase: false, uppercase: false, number: false, special: false });
+    setPasswordConfirmError('');
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setIsSubmitting(false);
+    setIsManuallyCleared(false);
+  }, [isLogin]);
 
-          console.log('Email check result:', { signupData, signupError });
-
-          // 회원가입이 성공한 경우 - 새 계정이므로 중복 아님
-          if (signupData && signupData.user && !signupError) {
-            console.log('새 계정 생성 성공 - 중복 아님');
-            setEmailError(''); // 중복 아님
-            return;
-          }
-
-          // Supabase에서 반환하는 중복 이메일 오류 처리
-          if (signupError && (
-            signupError.message === 'User already registered' ||
-            signupError.message.includes('already registered') ||
-            signupError.message.includes('already exists') ||
-            signupError.message.includes('duplicate') ||
-            signupError.message.includes('email address is already in use') ||
-            signupError.message.includes('Email already registered') ||
-            signupError.message.includes('email already registered') ||
-            signupError.message.includes('User already exists') ||
-            signupError.message.includes('Email already exists') ||
-            signupError.message.includes('이미 등록된') ||
-            signupError.message.includes('이미 존재하는') ||
-            signupError.status === 400 ||
-            signupError.status === 409
-          )) {
-            setEmailError('이미 사용되고 있는 계정입니다');
-            return;
-          }
-
-          // 비밀번호 강도 오류는 이메일 중복이 아님
-          if (signupError && signupError.message.includes('Password should contain')) {
-            setEmailError(''); // 비밀번호 강도 오류는 무시
-            return;
-          }
-
-          // 계정이 존재하지 않음
-          setEmailError('');
-        } catch (error) {
-          console.error('Email check error:', error);
-          setEmailError('');
-        } finally {
-          setIsCheckingEmail(false);
-        }
-      };
-
-      // 디바운싱 (500ms 후에 체크)
-      const timeoutId = setTimeout(checkEmailDuplicate, 500);
-      return () => clearTimeout(timeoutId);
-    } else {
-      setEmailError('');
+  // 비밀번호 강도 측정 (회원가입 모드에서만)
+  useEffect(() => {
+    if (isLogin) {
+      setPasswordStrength({ score: 0, label: '', color: '' });
+      setPasswordCriteria({ length: false, lowercase: false, uppercase: false, number: false, special: false });
+      setPasswordConfirmError('');
+      return;
     }
-  }, [email, isLogin, password]);
+    const value = password || '';
+    let score = 0;
+    if (value.length >= 8) score += 1;
+    if (/[A-Z]/.test(value)) score += 1;
+    if (/[a-z]/.test(value)) score += 1;
+    if (/[0-9]/.test(value)) score += 1;
+    if (/[^A-Za-z0-9]/.test(value)) score += 1;
+    if (value.length >= 12) score += 1;
 
+    // 비밀번호 기준 체크 (10자 이상, 소문자, 대문자, 숫자, 특수문자)
+    setPasswordCriteria({
+      length: value.length >= 10,
+      lowercase: /[a-z]/.test(value),
+      uppercase: /[A-Z]/.test(value),
+      number: /[0-9]/.test(value),
+      special: /[^A-Za-z0-9]/.test(value)
+    });
+
+    let label = '약함';
+    let color = '#ef4444';
+    if (score >= 4) { label = '보통'; color = '#f59e0b'; }
+    if (score >= 6) { label = '강함'; color = '#22c55e'; }
+    setPasswordStrength({ score, label, color });
+  }, [password, isLogin]);
+
+  // 비밀번호 확인 검사 (회원가입 모드에서만)
+  useEffect(() => {
+    if (isLogin || !confirmPassword) {
+      setPasswordConfirmError('');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setPasswordConfirmError('비밀번호가 일치하지 않습니다');
+    } else {
+      setPasswordConfirmError('');
+    }
+  }, [password, confirmPassword, isLogin]);
+
+  // 공용 이메일 검사 함수 (즉시 실행용)
+  const checkEmailNow = async (targetEmail: string) => {
+    if (!targetEmail) {
+      setEmailError('');
+      return;
+    }
+    
+    setIsCheckingEmail(true);
+    try {
+      const { data, error } = await supabase.rpc('email_exists', { p_email: targetEmail });
+      if (error) {
+        if (import.meta.env.DEV) console.warn('Email availability RPC error (onBlur):', error.message);
+        setEmailError('');
+      } else if (data === true) {
+        // 가입 모드에서는 중복 경고, 로그인 모드에서는 정상
+        setEmailError(isLogin ? '' : '이미 사용되고 있는 이메일입니다');
+      } else {
+        // 로그인 모드에서는 없는 계정 경고, 가입 모드에서는 정상
+        setEmailError(isLogin ? '없는 계정입니다.' : '');
+      }
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('Email availability RPC exception (onBlur):', e);
+      setEmailError('');
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
+  // 이메일 존재 여부 검사 (디바운스, RPC: public.email_exists)
+  useEffect(() => {
+    console.log('이메일 useEffect 실행:', { email, isManuallyCleared, isLogin });
+    
+    if (!email) {
+      setEmailError('');
+      // 수동으로 클리어된 경우가 아니면 isManuallyCleared를 false로 리셋
+      if (!isManuallyCleared) {
+        setIsManuallyCleared(false);
+      }
+      return;
+    }
+
+    // 수동으로 클리어된 경우 체크하지 않음
+    if (isManuallyCleared) {
+      console.log('수동으로 클리어됨 - 이메일 체크 건너뜀');
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setIsCheckingEmail(true);
+      try {
+        const { data, error } = await supabase.rpc('email_exists', { p_email: email });
+
+        if (error) {
+          // RPC 오류 시, 제출 단계에서 중복을 재검사하므로 필드는 통과시킴
+          console.warn('Email availability RPC error:', error.message);
+          setEmailError('');
+        } else if (data === true) {
+          // 가입 모드에서는 중복 경고, 로그인 모드에서는 정상
+          setEmailError(isLogin ? '' : '이미 사용되고 있는 이메일입니다');
+        } else {
+          // 로그인 모드에서는 없는 계정 경고, 가입 모드에서는 정상
+          setEmailError(isLogin ? '없는 계정입니다.' : '');
+        }
+      } catch (e) {
+        console.warn('Email availability RPC exception:', e);
+        setEmailError('');
+      } finally {
+        setIsCheckingEmail(false);
+      }
+    }, 500);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [email, isLogin, isManuallyCleared]);
 
   const handleSignUp = async (email: string, password: string) => {
     const redirectUrl = `${window.location.origin}/`;
-
-    console.log('Attempting signup for email:', email);
-
-    const { data, error } = await supabase.auth.signUp({
+    
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl
       }
     });
-
-    console.log('Signup response:', { data, error });
-
     return { error };
   };
 
@@ -149,6 +210,7 @@ const Auth: React.FC = () => {
     setGoogleLoading(true);
     try {
       console.log('구글 로그인 시도 중...');
+      console.log('현재 도메인:', window.location.origin);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -167,12 +229,17 @@ const Auth: React.FC = () => {
         console.error('구글 로그인 오류:', error);
         console.error('오류 상세 정보:', {
           message: error.message,
-          status: error.status
+          status: error.status,
+          name: error.name
         });
         
         let errorMessage = error.message;
-        if (error.message.includes('Invalid token')) {
-          errorMessage = "Google OAuth 설정이 올바르지 않습니다. 관리자에게 문의하세요.";
+        if (error.message.includes('Invalid token') || error.message.includes('signature is invalid')) {
+          errorMessage = "Google OAuth가 설정되지 않았습니다. 관리자에게 문의하세요.";
+        } else if (error.message.includes('Provider not found')) {
+          errorMessage = "Google 로그인이 비활성화되어 있습니다.";
+        } else if (error.message.includes('Invalid redirect URL')) {
+          errorMessage = "리디렉션 URL이 올바르지 않습니다.";
         }
         
         toast({
@@ -188,7 +255,7 @@ const Auth: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('구글 로그인 예외:', error);
+      if (import.meta.env.DEV) console.error('구글 로그인 예외:', error);
       toast({
         title: "구글 로그인 중 오류가 발생했습니다",
         description: "잠시 후 다시 시도해주세요.",
@@ -202,23 +269,48 @@ const Auth: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('=== Form Submit Debug ===');
-    console.log('isLogin:', isLogin);
-    console.log('email:', email);
-    console.log('password:', password);
+    // 중복 제출 방지
+    if (isSubmitting) return;
     
     // 회원가입 시 비밀번호 확인
     if (!isLogin && password !== confirmPassword) {
-      setConfirmPasswordError('비밀번호가 일치하지 않습니다');
+      toast({
+        title: "비밀번호가 일치하지 않습니다",
+        description: "비밀번호를 다시 확인해주세요.",
+        variant: "destructive",
+      });
       return;
     }
 
-    // 비밀번호 강도 검사
-    if (!isLogin && password.length < 6) {
-      setPasswordError('비밀번호는 6자 이상이어야 합니다');
+    // 비밀번호 필수 조건 검사
+    if (!isLogin) {
+      const allCriteriaMet = passwordCriteria.length && 
+                            passwordCriteria.lowercase && 
+                            passwordCriteria.uppercase && 
+                            passwordCriteria.number && 
+                            passwordCriteria.special;
+      
+      if (!allCriteriaMet) {
+        toast({
+          title: "비밀번호 필수 조건을 확인해 주세요",
+          description: "10자 이상, 대소문자, 숫자, 특수문자를 모두 포함해야 합니다.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // 진행 중 체크 또는 이메일 오류 시 차단
+    if (isCheckingEmail || emailError) {
+      toast({
+        title: isCheckingEmail ? "이메일 확인 중" : (isLogin ? "로그인 불가" : "이메일 중복"),
+        description: isCheckingEmail ? '이메일 사용 가능 여부 확인이 끝난 후 다시 시도하세요.' : emailError,
+        variant: "destructive",
+      });
       return;
     }
 
+    setIsSubmitting(true);
     setLoading(true);
 
     try {
@@ -227,18 +319,37 @@ const Auth: React.FC = () => {
         : await handleSignUp(email, password);
 
       if (error) {
-        console.log('Auth error:', error);
-        console.log('Error message:', error.message);
-        console.log('Error status:', error.status);
-        
-        if (isLogin) {
-          if (error.message === 'Invalid login credentials') {
-            setPasswordError('계정이 존재하지 않습니다. 회원가입 후 사용해주세요');
-          } else {
-            setPasswordError(error.message);
-          }
+        // 상세 진단용 콘솔 로그 (서버 응답 구조에 따라 status/code/constraint 노출될 수 있음)
+        if (import.meta.env.DEV) console.error('Auth error detail:', {
+          phase: isLogin ? 'signIn' : 'signUp',
+          message: error.message,
+          status: (error as any)?.status,
+          name: (error as any)?.name,
+          code: (error as any)?.code,
+          // Supabase가 내보내는 Postgres 오류의 경우 아래와 같은 필드가 포함될 수 있음
+          details: (error as any)?.details,
+          hint: (error as any)?.hint,
+        });
+        if (error.message === 'User already registered') {
+          // 인라인 에러도 함께 표시하여 사용자에게 즉시 피드백 제공
+          if (!isLogin) setEmailError('이미 사용되고 있는 이메일입니다');
+          toast({
+            title: "이미 가입된 사용자입니다",
+            description: "이미 사용되고 있는 이메일입니다",
+            variant: "destructive",
+          });
+        } else if (error.message === 'Invalid login credentials') {
+          toast({
+            title: "로그인 정보가 올바르지 않습니다",
+            description: "이메일과 비밀번호를 확인해주세요.",
+            variant: "destructive",
+          });
         } else {
-          setPasswordError(error.message);
+          toast({
+            title: isLogin ? "로그인 실패" : "회원가입 실패",
+            description: error.message,
+            variant: "destructive",
+          });
         }
       } else if (!isLogin) {
         toast({
@@ -247,14 +358,14 @@ const Auth: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Auth error:', error);
-      if (isLogin) {
-        setPasswordError('계정이 존재하지 않습니다. 회원가입 후 사용해주세요');
-      } else {
-        setPasswordError('회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      }
+      toast({
+        title: "오류가 발생했습니다",
+        description: "잠시 후 다시 시도해주세요.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -285,68 +396,197 @@ const Auth: React.FC = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-gray-700 font-medium">이메일</Label>
-                      <div className="relative">
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="example@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          className={`border-gray-300 focus:border-black focus:ring-black ${
-                            emailError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
-                          }`}
-                        />
-                        {isCheckingEmail && (
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                          </div>
-                        )}
-                      </div>
-                      {emailError && (
-                        <p className="text-sm text-red-500">{emailError}</p>
-                      )}
-                    </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-700 font-medium">이메일</Label>
+                <div className="relative">
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="example@email.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      // 새로운 텍스트를 입력할 때만 수동 클리어 상태를 리셋
+                      if (e.target.value.length > 0) {
+                        setIsManuallyCleared(false);
+                      }
+                    }}
+                    onBlur={() => checkEmailNow(email)}
+                    required
+                    className="border-gray-300 focus:border-black focus:ring-black pr-10"
+                  />
+                  {email && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        console.log('× 버튼 클릭 - 이메일 초기화');
+                        setEmail('');
+                        setEmailError('');
+                        setIsCheckingEmail(false);
+                        setIsManuallyCleared(true);
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                <div className="text-xs h-4" aria-live="polite">
+                  {isCheckingEmail && (
+                    <span className="text-gray-500">
+                      {isLogin ? '계정 확인 중…' : '이메일 사용 가능 여부 확인 중…'}
+                    </span>
+                  )}
+                  {!isCheckingEmail && emailError && (
+                    <span className="text-red-600">{emailError}</span>
+                  )}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-700 font-medium">비밀번호</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={isLogin ? "비밀번호를 입력하세요" : "6자 이상 비밀번호를 입력하세요"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="border-gray-300 focus:border-black focus:ring-black"
-                />
-                {passwordError && (
-                  <p className="text-sm text-red-500">{passwordError}</p>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder={isLogin ? "비밀번호를 입력하세요" : "10자 이상, 대소문자, 숫자, 특수문자 포함"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="border-gray-300 focus:border-black focus:ring-black pr-20"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                    {password && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPassword('');
+                          setPasswordStrength({ score: 0, label: '', color: '' });
+                          setPasswordCriteria({ length: false, lowercase: false, uppercase: false, number: false, special: false });
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                {!isLogin && (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs text-gray-600 font-medium">비밀번호 필수 조건:</div>
+                    <div className="space-y-1">
+                      <div className={`text-xs flex items-center gap-2 ${passwordCriteria.length ? 'text-green-600' : 'text-gray-500'}`}>
+                        {passwordCriteria.length ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-gray-400" />
+                        )}
+                        10자 이상
+                      </div>
+                      <div className={`text-xs flex items-center gap-2 ${passwordCriteria.lowercase ? 'text-green-600' : 'text-gray-500'}`}>
+                        {passwordCriteria.lowercase ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-gray-400" />
+                        )}
+                        소문자 포함
+                      </div>
+                      <div className={`text-xs flex items-center gap-2 ${passwordCriteria.uppercase ? 'text-green-600' : 'text-gray-500'}`}>
+                        {passwordCriteria.uppercase ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-gray-400" />
+                        )}
+                        대문자 포함
+                      </div>
+                      <div className={`text-xs flex items-center gap-2 ${passwordCriteria.number ? 'text-green-600' : 'text-gray-500'}`}>
+                        {passwordCriteria.number ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-gray-400" />
+                        )}
+                        숫자 포함
+                      </div>
+                      <div className={`text-xs flex items-center gap-2 ${passwordCriteria.special ? 'text-green-600' : 'text-gray-500'}`}>
+                        {passwordCriteria.special ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-gray-400" />
+                        )}
+                        특수문자 포함
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
               {!isLogin && (
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">비밀번호 확인</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="비밀번호를 다시 입력하세요"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className="border-gray-300 focus:border-black focus:ring-black"
-                  />
-                  {confirmPasswordError && (
-                    <p className="text-sm text-red-500">{confirmPasswordError}</p>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="비밀번호를 다시 입력하세요"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      className="border-gray-300 focus:border-black focus:ring-black pr-20"
+                    />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                      {confirmPassword && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setConfirmPassword('');
+                            setPasswordConfirmError('');
+                          }}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  {passwordConfirmError && (
+                    <div className="text-xs text-red-600 mt-1 flex items-center gap-1" aria-live="polite">
+                      <XCircle className="h-3 w-3" />
+                      {passwordConfirmError}
+                    </div>
+                  )}
+                  {!passwordConfirmError && confirmPassword && password === confirmPassword && (
+                    <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <CheckCircle className="h-3 w-3" />
+                      비밀번호가 일치합니다
+                    </div>
                   )}
                 </div>
               )}
               <Button
                 type="submit"
                 className="w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium rounded-full"
-                disabled={loading || (!isLogin && (isCheckingEmail || emailError))}
+                disabled={loading || isSubmitting || (!isLogin && (isCheckingEmail || !!emailError))}
               >
-                {loading ? '처리 중...' : (isLogin ? '로그인' : '회원가입')}
+                {loading || isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <LoadingSpinner size="sm" className="text-white" />
+                    {isLogin ? '로그인 중...' : '회원가입 중...'}
+                  </div>
+                ) : (
+                  isLogin ? '로그인' : '회원가입'
+                )}
               </Button>
             </form>
             
@@ -369,32 +609,50 @@ const Auth: React.FC = () => {
                 e.preventDefault();
                 handleGoogleLogin();
               }}
-              disabled={googleLoading || loading}
+              disabled={googleLoading || loading || isSubmitting || (!isLogin && (isCheckingEmail || !!emailError))}
             >
-              <svg
-                className="mr-2 h-4 w-4"
-                aria-hidden="true"
-                focusable="false"
-                data-prefix="fab"
-                data-icon="google"
-                role="img"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 488 512"
-              >
-                <path
-                  fill="currentColor"
-                  d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h240z"
-                ></path>
-              </svg>
-              {googleLoading ? '구글 로그인 중...' : '구글로 계속하기'}
+              {googleLoading ? (
+                <div className="flex items-center gap-2">
+                  <LoadingSpinner size="sm" />
+                  구글 로그인 중...
+                </div>
+              ) : (
+                <>
+                  <svg
+                    className="mr-2 h-4 w-4"
+                    aria-hidden="true"
+                    focusable="false"
+                    data-prefix="fab"
+                    data-icon="google"
+                    role="img"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 488 512"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h240z"
+                    ></path>
+                  </svg>
+                  구글로 계속하기
+                </>
+              )}
             </Button>
             
             <div className="mt-4 text-center">
               <button
                 type="button"
                 onClick={() => {
+                  // 모든 상태 초기화
+                  setEmailError('');
+                  setIsCheckingEmail(false);
+                  setPasswordConfirmError('');
+                  setShowPassword(false);
+                  setShowConfirmPassword(false);
+                  setIsSubmitting(false);
+                  setPasswordStrength({ score: 0, label: '', color: '' });
+                  setPasswordCriteria({ length: false, lowercase: false, uppercase: false, number: false, special: false });
+                  // 모드 전환
                   setIsLogin(!isLogin);
-                  resetForm();
                 }}
                 className="text-sm text-gray-600 hover:text-black transition-colors"
               >

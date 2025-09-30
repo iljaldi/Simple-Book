@@ -4,17 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/design-system/Modal';
-import { Download, FileText, FileSpreadsheet, Calendar, CheckCircle, Trash2, Eye, X } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { Download, FileText, FileSpreadsheet, Calendar, CheckCircle, Trash2, Eye, X, Shield, Star, Users, Clock } from 'lucide-react';
+// PDF 생성 기능은 필요시 활성화
+// import jsPDF from 'jspdf';
+// import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
-// jsPDF 타입 확장
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
+// jsPDF 타입 확장 (필요시 활성화)
+// declare module 'jspdf' {
+//   interface jsPDF {
+//     autoTable: (options: any) => jsPDF;
+//   }
+// }
 
 const Exports: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState('2024');
@@ -179,90 +180,8 @@ Transportation,20000,${currentDate},Expense`;
   };
 
   const generatePDFContent = (pkg: any, fileName: string) => {
-    try {
-      // jsPDF를 사용한 PDF 생성
-      const pdf = new jsPDF();
-      const currentDate = new Date().toISOString().split('T')[0];
-      
-      // 제목
-      pdf.setFontSize(20);
-      pdf.text(pkg.name, 20, 30);
-      
-      // 기본 정보
-      pdf.setFontSize(12);
-      pdf.text(`Report Year: ${pkg.year}`, 20, 50);
-      pdf.text(`Created Date: ${currentDate}`, 20, 60);
-      pdf.text(`File Format: ${pkg.format.toUpperCase()}`, 20, 70);
-      
-      // 구분선
-      pdf.line(20, 80, 190, 80);
-      
-      // 재무 정보
-      pdf.setFontSize(14);
-      pdf.text('Financial Summary', 20, 95);
-      
-      pdf.setFontSize(10);
-      pdf.text('Income: 2,500,000 KRW', 20, 110);
-      pdf.text('Expenses: 1,800,000 KRW', 20, 120);
-      pdf.text('Net Profit: 700,000 KRW', 20, 130);
-      
-      // 세금 정보
-      pdf.setFontSize(14);
-      pdf.text('Tax Calculation', 20, 150);
-      
-      pdf.setFontSize(10);
-      pdf.text('VAT: 70,000 KRW (10% of Net Profit)', 20, 165);
-      pdf.text('Income Tax: 140,000 KRW (20% of Net Profit)', 20, 175);
-      
-      // 거래 내역
-      pdf.setFontSize(14);
-      pdf.text('Transaction Details', 20, 195);
-      
-      pdf.setFontSize(10);
-      pdf.text('Sales: 500,000 KRW', 20, 210);
-      pdf.text('Salary: 300,000 KRW', 20, 220);
-      pdf.text('Office Supplies: 50,000 KRW', 20, 230);
-      pdf.text('Communication: 30,000 KRW', 20, 240);
-      pdf.text('Transportation: 20,000 KRW', 20, 250);
-      
-      // PDF 다운로드
-      pdf.save(fileName);
-    } catch (error) {
-      console.error('PDF 생성 중 오류:', error);
-      // 대안: 간단한 텍스트 파일로 다운로드
-      const textContent = `
-${pkg.name}
-Report Year: ${pkg.year}
-Created Date: ${new Date().toISOString().split('T')[0]}
-File Format: ${pkg.format.toUpperCase()}
-
-Financial Summary:
-- Income: 2,500,000 KRW
-- Expenses: 1,800,000 KRW
-- Net Profit: 700,000 KRW
-
-Tax Calculation:
-- VAT: 70,000 KRW (10% of Net Profit)
-- Income Tax: 140,000 KRW (20% of Net Profit)
-
-Transaction Details:
-- Sales: 500,000 KRW
-- Salary: 300,000 KRW
-- Office Supplies: 50,000 KRW
-- Communication: 30,000 KRW
-- Transportation: 20,000 KRW
-      `;
-      
-      const blob = new Blob([textContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName.replace('.pdf', '.txt');
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
+    // PDF 생성 기능은 필요시 활성화
+    alert('PDF 생성 기능은 준비 중입니다.');
   };
 
   const handleDeletePackage = (packageId: number) => {
@@ -513,6 +432,150 @@ Transaction Details:
             </div>
           </CardContent>
         </Card>
+
+        {/* 전문 세무 검토 연계 섹션 */}
+        <div className="mt-8">
+          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-purple-900">
+                <div className="p-2 rounded-lg bg-purple-100">
+                  <Shield className="h-6 w-6 text-purple-600" />
+                </div>
+                전문 세무 검토 연계
+                <Badge className="bg-purple-600 text-white">신규</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-8">
+                {/* 서비스 소개 */}
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">전문 세무사가 검토해드립니다</h3>
+                  <p className="text-gray-600 leading-relaxed max-w-3xl mx-auto">
+                    생성된 신고 패키지를 전문 세무사가 검토하여 
+                    홈택스 신고 시 발생할 수 있는 오류를 미리 방지하고 
+                    최적의 세무 전략을 제안해드립니다.
+                  </p>
+                </div>
+
+                {/* 주요 기능 */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-gray-900">세무 신고 오류 방지</p>
+                      <p className="text-sm text-gray-600">분류 오류, 누락 항목 등을 사전에 점검</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-gray-900">최적 세무 전략 제안</p>
+                      <p className="text-sm text-gray-600">개인 상황에 맞는 절세 방안 제안</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-gray-900">홈택스 신고 지원</p>
+                      <p className="text-sm text-gray-600">신고서 작성부터 제출까지 전 과정 지원</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 검토 서비스 선택 */}
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">검토 서비스 선택</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* 기본 검토 */}
+                    <Card className="border border-gray-200 hover:border-purple-300 transition-colors cursor-pointer">
+                      <CardContent className="p-6">
+                        <div className="text-center mb-4">
+                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Shield className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <h4 className="text-lg font-bold text-gray-900 mb-2">기본 검토</h4>
+                          <p className="text-sm text-gray-600">데이터 정확성 검토</p>
+                        </div>
+                        <div className="text-center mb-4">
+                          <p className="text-2xl font-bold text-blue-600">₩50,000</p>
+                          <p className="text-sm text-gray-500">1회</p>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
+                          <Clock className="h-4 w-4" />
+                          <span>3-5일 소요</span>
+                        </div>
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                          선택하기
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* 프리미엄 검토 */}
+                    <Card className="border-2 border-purple-200 bg-purple-50 hover:border-purple-400 transition-colors cursor-pointer">
+                      <CardContent className="p-6">
+                        <div className="text-center mb-4">
+                          <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Star className="h-6 w-6 text-purple-600" />
+                          </div>
+                          <h4 className="text-lg font-bold text-gray-900 mb-2">프리미엄 검토</h4>
+                          <p className="text-sm text-gray-600">전체 세무 전략 검토</p>
+                        </div>
+                        <div className="text-center mb-4">
+                          <p className="text-2xl font-bold text-purple-600">₩150,000</p>
+                          <p className="text-sm text-gray-500">1회</p>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
+                          <Clock className="h-4 w-4" />
+                          <span>5-7일 소요</span>
+                        </div>
+                        <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+                          선택하기
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* 연간 구독 */}
+                    <Card className="border border-gray-200 hover:border-green-300 transition-colors cursor-pointer">
+                      <CardContent className="p-6">
+                        <div className="text-center mb-4">
+                          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Users className="h-6 w-6 text-green-600" />
+                          </div>
+                          <h4 className="text-lg font-bold text-gray-900 mb-2">연간 구독</h4>
+                          <p className="text-sm text-gray-600">월 1회 정기 검토</p>
+                        </div>
+                        <div className="text-center mb-4">
+                          <p className="text-2xl font-bold text-green-600">₩300,000</p>
+                          <p className="text-sm text-gray-500">연간</p>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
+                          <Clock className="h-4 w-4" />
+                          <span>월 1회 검토</span>
+                        </div>
+                        <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                          선택하기
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* 하단 액션 버튼 */}
+                <div className="flex justify-center gap-4">
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white px-8">
+                    검토 신청하기
+                  </Button>
+                  <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50 px-8">
+                    상담 문의
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       </div>
 

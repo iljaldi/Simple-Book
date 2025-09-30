@@ -134,6 +134,13 @@
   --color-light-gray-blue: #94a3b8;
   --color-mint: #10b981;
   
+  /* Secondary Colors */
+  --color-secondary-1: #280120;
+  --color-secondary-2: #450063;
+  --color-secondary-3: #9414d1;
+  --color-secondary-4: #03b2ed;
+  --color-secondary-5: #fd59ca;
+  
   /* Focus Ring */
   --focus-ring-color: var(--color-indigo);
   --focus-ring-width: 2px;

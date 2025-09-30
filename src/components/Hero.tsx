@@ -3,10 +3,8 @@ import { Helmet } from "react-helmet-async";
 import HeroMain from "./sections/HeroMain";
 import StorySection from "./sections/StorySection";
 import SolutionSection from "./sections/SolutionSection";
-import ScreensSection from "./sections/ScreensSection";
 import UserTypesSection from "./sections/UserTypesSection";
 import PricingSection from "./sections/PricingSection";
-import TestimonialsSection from "./sections/TestimonialsSection";
 import FAQSection from "./sections/FAQSection";
 import CTASection from "./sections/CTASection";
 import Footer from "./sections/Footer";
@@ -81,17 +79,6 @@ const Hero = () => {
         <SolutionSection />
       </div>
       <div 
-        ref={(el) => (sectionRefs.current['screens'] = el)}
-        data-section-id="screens"
-        className={`transform transition-all duration-1000 ease-out ${
-          visibleSections.has('screens')
-            ? 'translate-y-0 opacity-100' 
-            : 'translate-y-12 opacity-0'
-        }`}
-      >
-        <ScreensSection />
-      </div>
-      <div 
         ref={(el) => (sectionRefs.current['user-types'] = el)}
         data-section-id="user-types"
         className={`transform transition-all duration-1000 ease-out ${
@@ -112,17 +99,6 @@ const Hero = () => {
         }`}
       >
         <PricingSection />
-      </div>
-      <div 
-        ref={(el) => (sectionRefs.current['testimonials'] = el)}
-        data-section-id="testimonials"
-        className={`transform transition-all duration-1000 ease-out ${
-          visibleSections.has('testimonials')
-            ? 'translate-y-0 opacity-100' 
-            : 'translate-y-12 opacity-0'
-        }`}
-      >
-        <TestimonialsSection />
       </div>
       <div 
         ref={(el) => (sectionRefs.current['faq'] = el)}
@@ -146,17 +122,7 @@ const Hero = () => {
       >
         <CTASection />
       </div>
-      <div 
-        ref={(el) => (sectionRefs.current['footer'] = el)}
-        data-section-id="footer"
-        className={`transform transition-all duration-1000 ease-out ${
-          visibleSections.has('footer')
-            ? 'translate-y-0 opacity-100' 
-            : 'translate-y-12 opacity-0'
-        }`}
-      >
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };

@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { BarChart3, TrendingUp, Calendar, Download, PieChart, LineChart, DollarSign } from 'lucide-react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { BarChart3, TrendingUp, Calendar, Download, PieChart, LineChart, DollarSign, Shield, CheckCircle, Star, Users, Clock } from 'lucide-react';
+// PDF 생성 기능은 필요시 활성화
+// import jsPDF from 'jspdf';
+// import html2canvas from 'html2canvas';
 
 const Reports: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('this-month');
@@ -42,55 +43,8 @@ const Reports: React.FC = () => {
   };
 
   const handleDownloadReport = async () => {
-    if (!reportRef.current) return;
-    
-    setIsDownloading(true);
-    
-    try {
-      // 리포트 영역을 캡처
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff'
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      
-      // PDF 생성
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 295;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      
-      let position = 0;
-      
-      // 첫 페이지 추가
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      // 추가 페이지가 필요한 경우
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      
-      // 파일명 생성
-      const periodLabel = periods.find(p => p.value === selectedPeriod)?.label || '기간';
-      const fileName = `재무리포트_${periodLabel}_${new Date().toISOString().split('T')[0]}.pdf`;
-      
-      // PDF 다운로드
-      pdf.save(fileName);
-      
-    } catch (error) {
-      console.error('리포트 다운로드 중 오류가 발생했습니다:', error);
-      alert('리포트 다운로드 중 오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsDownloading(false);
-    }
+    // PDF 다운로드 기능은 필요시 활성화
+    alert('PDF 다운로드 기능은 준비 중입니다.');
   };
 
   // 더미 데이터
@@ -581,6 +535,153 @@ const Reports: React.FC = () => {
                     <span className="text-lg font-bold text-red-700">
                       ₩{Math.round(expenseTrendData.reduce((sum, data) => sum + data.amount, 0) / expenseTrendData.length).toLocaleString()}
                     </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 전문 세무 검토 연계 섹션 */}
+        <div className="mt-16">
+          <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-purple-900">
+                <div className="p-2 rounded-lg bg-purple-100">
+                  <Shield className="h-6 w-6 text-purple-600" />
+                </div>
+                전문 세무 검토 연계
+                <Badge className="bg-purple-600 text-white">신규</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* 왼쪽: 서비스 소개 */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">전문 세무사가 검토해드립니다</h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      간편장부로 정리한 데이터를 전문 세무사가 검토하여 
+                      홈택스 신고 시 발생할 수 있는 오류를 미리 방지하고 
+                      최적의 세무 전략을 제안해드립니다.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-gray-900">세무 신고 오류 방지</p>
+                        <p className="text-sm text-gray-600">분류 오류, 누락 항목 등을 사전에 점검</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-gray-900">최적 세무 전략 제안</p>
+                        <p className="text-sm text-gray-600">개인 상황에 맞는 절세 방안 제안</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-medium text-gray-900">홈택스 신고 지원</p>
+                        <p className="text-sm text-gray-600">신고서 작성부터 제출까지 전 과정 지원</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 오른쪽: 검토 옵션 */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">검토 서비스 선택</h3>
+                    
+                    {/* 기본 검토 */}
+                    <Card className="border border-gray-200 hover:border-purple-300 transition-colors cursor-pointer">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                              <Shield className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-900">기본 검토</h4>
+                              <p className="text-sm text-gray-600">데이터 정확성 검토</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-blue-600">₩50,000</p>
+                            <p className="text-xs text-gray-500">1회</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="h-4 w-4" />
+                          <span>3-5일 소요</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* 프리미엄 검토 */}
+                    <Card className="border-2 border-purple-200 bg-purple-50 hover:border-purple-400 transition-colors cursor-pointer">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                              <Star className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-900">프리미엄 검토</h4>
+                              <p className="text-sm text-gray-600">전체 세무 전략 검토</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-purple-600">₩150,000</p>
+                            <p className="text-xs text-gray-500">1회</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="h-4 w-4" />
+                          <span>5-7일 소요</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* 연간 구독 */}
+                    <Card className="border border-gray-200 hover:border-green-300 transition-colors cursor-pointer">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                              <Users className="h-4 w-4 text-green-600" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-gray-900">연간 구독</h4>
+                              <p className="text-sm text-gray-600">월 1회 정기 검토</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-green-600">₩300,000</p>
+                            <p className="text-xs text-gray-500">연간</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="h-4 w-4" />
+                          <span>월 1회 검토</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white">
+                      검토 신청하기
+                    </Button>
+                    <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                      상담 문의
+                    </Button>
                   </div>
                 </div>
               </div>

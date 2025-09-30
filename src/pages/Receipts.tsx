@@ -163,6 +163,40 @@ const Receipts: React.FC = () => {
               </CardContent>
             </Card>
 
+            {/* CSV Upload Section */}
+            <Card className="border border-gray-200 mt-6">
+              <CardHeader>
+                <CardTitle className="text-gray-900 flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-blue-600" />
+                  영수증·카드/은행 CSV 업로드
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <FileImage className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 mb-1">CSV 파일을 드래그하거나 클릭하여 업로드</p>
+                        <p className="text-xs text-gray-500">카드사, 은행에서 다운로드한 CSV 파일을 업로드하세요</p>
+                      </div>
+                      <button className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
+                        파일 선택
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500 space-y-1">
+                    <p>• 지원 형식: CSV, Excel (.xlsx)</p>
+                    <p>• 카드사: 신한카드, 현대카드, 삼성카드, KB국민카드</p>
+                    <p>• 은행: 신한은행, KB국민은행, 하나은행, 우리은행</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Tips */}
             <Card className="border border-gray-200 mt-6">
               <CardHeader>

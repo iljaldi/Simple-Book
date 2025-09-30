@@ -7,6 +7,8 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AuthenticatedLayout from "@/components/layouts/AuthenticatedLayout";
 import OAuthCallback from "@/components/OAuthCallback";
+import ErrorBoundary from "@/components/ui/error-boundary";
+import { LoadingPage } from "@/components/ui/loading";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -32,34 +34,32 @@ const AuthenticatedRedirect = () => {
   const urlParams = new URLSearchParams(location.search);
   const redirectTo = urlParams.get('redirect_to') || '/dashboard';
   
+  // 로딩 중이거나 초기화가 완료되지 않았으면 로딩 화면 표시
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    );
+    return <LoadingPage message="인증 확인 중..." description="잠시만 기다려주세요" />;
   }
   
-  if (user) {
+  // 인증된 사용자이고 유효한 사용자 정보가 있으면 대시보드로 리디렉션
+  if (user && user.id) {
     console.log('인증된 사용자 감지, 대시보드로 리디렉션:', user);
     console.log('리디렉션 대상:', redirectTo);
     return <Navigate to={redirectTo} replace />;
   }
   
+  // 인증되지 않은 사용자면 메인 페이지 표시
+  console.log('인증되지 않은 사용자 - 메인 페이지 표시');
   return <Index />;
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
             {/* Public routes */}
             <Route path="/" element={<AuthenticatedRedirect />} />
             <Route path="/auth" element={<Auth />} />
@@ -127,11 +127,12 @@ const App = () => (
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
