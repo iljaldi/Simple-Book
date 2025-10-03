@@ -53,31 +53,10 @@ export type Database = {
             foreignKeyName: "categories_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          email: string | null
-          id: string
-          name: string | null
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          id: string
-          name?: string | null
-        }
-        Update: {
-          created_at?: string
-          email?: string | null
-          id?: string
-          name?: string | null
-        }
-        Relationships: []
       }
       receipts: {
         Row: {
