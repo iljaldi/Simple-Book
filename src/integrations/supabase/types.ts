@@ -14,44 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      businesses: {
-        Row: {
-          address: string | null
-          biz_type_code: string | null
-          created_at: string
-          id: string
-          name: string
-          reg_no: string
-          user_id: string
-        }
-        Insert: {
-          address?: string | null
-          biz_type_code?: string | null
-          created_at?: string
-          id?: string
-          name: string
-          reg_no: string
-          user_id: string
-        }
-        Update: {
-          address?: string | null
-          biz_type_code?: string | null
-          created_at?: string
-          id?: string
-          name?: string
-          reg_no?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "businesses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       categories: {
         Row: {
           allow_override: boolean
